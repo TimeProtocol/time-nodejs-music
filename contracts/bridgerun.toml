@@ -1,0 +1,31 @@
+type = "directrequest"
+schemaVersion = 1
+name = "bridge"
+contractAddress = "0xDe868BdC543c76d22f51624a3F8B767964063014"
+maxTaskDuration = "0s"
+observationSource = """
+    decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+    decode_cbor  [type=cborparse data="$(decode_log.data)"]
+
+    fetch           [type=bridge name="eth-testing" requestData="{\\"address\\": $(decode_cbor.address)}" async=true]
+
+    id_parse     [type="jsonparse" path="$(decode_cbor.pathId)" data="$(fetch)"]
+
+    nft_parse    [type="jsonparse" path="$(decode_cbor.pathNFT)" data="$(fetch)"]
+
+    encode_data  [type="ethabiencode" abi="(bytes32 requestId, string _id, int256 _nft)" data="{ \\"requestId\\": $(decode_log.requestId), \\"_id\\": $(id_parse), \\"_nft\\": $(nft_parse) }"]
+
+    encode_tx    [type="ethabiencode"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"]
+
+    submit_tx    [type="ethtx" to="0xDe868BdC543c76d22f51624a3F8B767964063014" data="$(encode_tx)"]
+
+    decode_log -> decode_cbor -> fetch -> id_parse -> nft_parse -> encode_data -> encode_tx -> submit_tx
+"""
+externalJobID = "a2b81007-257c-4711-be0e-a7fab90aa54d"
+evmChainID = "5"
