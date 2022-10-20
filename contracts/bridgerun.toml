@@ -11,7 +11,7 @@ observationSource = """
 
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
 
-    fetch           [type=bridge name="eth-testing" requestData="{\\"address\\": $(decode_cbor.address)}" async=true]
+    fetch        [type=bridge name="eth-testing" requestData="{\\"address\\": $(decode_cbor.address)}" async=true]
 
     id_parse     [type="jsonparse" path="$(decode_cbor.pathId)" data="$(fetch)"]
 
