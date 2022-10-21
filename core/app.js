@@ -16,7 +16,6 @@ const options = {
     cert: fs.readFileSync("server.cert")
 }
 const httpolyglot = require('httpolyglot');
-const { balanceOf } = require('./packages/tools.js');
 const server = httpolyglot.createServer(options, app);
 const io = require('socket.io')(server, {
     cors: {
@@ -132,8 +131,8 @@ async function serve() {
                 clientID: client.id,
                 nft: -1,
                 requestID: -1,
-                userNFTamount: await balanceOf(address),
-                contractNFTamount: await balanceOf(),
+                userNFTamount: await tools.balanceOf(address),
+                contractNFTamount: await tools.balanceOf(),
             }
 
             //debug.log(return_data);
@@ -159,6 +158,8 @@ async function serve() {
             await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
 
             users = users + 1;
+
+            client.emit('start');
         });
 
         client.on('stop', async function socket_io_stop() {
@@ -168,6 +169,8 @@ async function serve() {
             await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
 
             users = users - 1;
+
+            client.emit('stop');
         });
 
     });
