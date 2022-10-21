@@ -68,6 +68,10 @@ async function serve() {
         console.log(``);
     });
 
+    app.get(`/`, async function serve_webpage(req, res) {
+        res.sendFile(path.join(__dirname, "../", "web", "public", "index.html"));
+    });
+
     app.post('/users', async function return_id_and_nft(req, res) {
 
         //  chainlink node is calling the Users table for the Users id and NFT values
