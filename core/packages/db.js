@@ -27,6 +27,7 @@ module.exports = {
             error: false,
             err: -1,
             results: -1,
+            users: 0
         }
 
         //  Let's try to connect to the sql server using the default settings
@@ -40,7 +41,9 @@ module.exports = {
             var promise = await connection.query(`SELECT * FROM users`);
             await connection.end();
             
-            debug.log(`...successfully established connection to the sql server using default settings`);      
+            debug.log(`...successfully established connection to the sql server using default settings`);
+
+            map.users = promise.length;
 
             return map;
         } 

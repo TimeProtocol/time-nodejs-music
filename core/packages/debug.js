@@ -37,6 +37,10 @@ module.exports = {
         else if (typeof text == `string`) {
             console.log(`[${_function.toUpperCase()}] => ` + text);
         } 
+        //  Text is a number, convert to string
+        else if (typeof text == 'number') {
+            console.log(`[${_function.toUpperCase()}] => ` + String(text));
+        }
     },
 
     section: function(text, color="\x1b[0m") {
