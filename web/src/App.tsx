@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
-const socket = io("http://localhost:5001");
+const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
 
 function App() {
   const { address, isConnected } = useAccount();
@@ -16,9 +16,14 @@ function App() {
       console.log("disconnected");
     });
 
+    socket.on("login", (data) => {
+      console.log(data);
+    });
+
     return () => {
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("login");
     };
   }, []);
 
@@ -33,11 +38,13 @@ function App() {
   return (
     <div>
       {address ? (
-        <h1 className="text-xl">welcome: {address}</h1>
+        <h1 className="text-xl text-center">welcome: {address}</h1>
       ) : (
-        <h1>Connect</h1>
+        <h1 className="connect text-center">Connect</h1>
       )}
+      <div className="flex justify-center">
       <ConnectButton />
+      </div>
     </div>
   );
 }
