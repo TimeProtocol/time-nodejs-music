@@ -16,7 +16,6 @@ const options = {
     cert: fs.readFileSync("server.cert")
 }
 const httpolyglot = require('httpolyglot');
-const { balanceOf } = require('./packages/tools.js');
 const server = httpolyglot.createServer(options, app);
 const io = require('socket.io')(server, {
     cors: {
@@ -27,7 +26,6 @@ const io = require('socket.io')(server, {
 const version = "0.0.001";
 const mode = 'DEVELOP';
 const port = 8080;
-let users = 0;
 
 async function main() {
     debug.log(`...> running version ${version} in ${mode}`);
@@ -66,10 +64,6 @@ async function serve() {
         console.log(``);
         debug.log(`Listening on port...> ${port}`);
         console.log(``);
-    });
-
-    app.get(`/`, async function serve_webpage(req, res) {
-        res.sendFile(path.join(__dirname, "../", "web", "public", "index.html"));
     });
 
     app.post('/users', async function return_id_and_nft(req, res) {
@@ -126,14 +120,13 @@ async function serve() {
 
                 await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
             }
-            users = users + 1;
 
             var return_data = {
                 clientID: client.id,
                 nft: -1,
                 requestID: -1,
-                userNFTamount: await balanceOf(address),
-                contractNFTamount: await balanceOf(),
+                userNFTamount: await tools.balanceOf(address),
+                contractNFTamount: await tools.balanceOf(),
             }
 
             //debug.log(return_data);
@@ -147,8 +140,6 @@ async function serve() {
             //var result = await db.Query('UPDATE users SET nft=? WHERE id=?', [-1, client.id]);
             await db.Query('DELETE FROM users WHERE id=?', [client.id]);
 
-            users = users - 1;
-
             client.emit('logout', true);
         });
 
@@ -158,7 +149,9 @@ async function serve() {
             //  set a new id for the User
             await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
 
-            users = users + 1;
+            client.join("time-room");
+
+            client.emit('start');
         });
 
         client.on('stop', async function socket_io_stop() {
@@ -167,7 +160,9 @@ async function serve() {
             //  clear the Users id
             await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
 
-            users = users - 1;
+            client.leave("time-room");
+
+            client.emit('stop');
         });
 
     });
