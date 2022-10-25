@@ -1,11 +1,14 @@
-import { useEffect } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
+
+import Login from "./Login";
+
 const socket = io("http://localhost:5001");
 
 function App() {
   const { address, isConnected } = useAccount();
+  const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -31,13 +34,12 @@ function App() {
   }, [isConnected, address]);
 
   return (
-    <div>
-      {address ? (
-        <h1 className="text-xl">welcome: {address}</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
+      {address && isConnected && isSpotifyLoggedIn ? (
+        <h1>logged in</h1>
       ) : (
-        <h1>Connect</h1>
+        <Login setIsSpotifyLoggedIn={setIsSpotifyLoggedIn} />
       )}
-      <ConnectButton />
     </div>
   );
 }
