@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
+const SpotifyWebApi = require('spotify-web-api-node');
 
 function App() {
   const { address, isConnected } = useAccount();
+  const [clientID, setClientID] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -18,6 +20,7 @@ function App() {
 
     socket.on("login", (data) => {
       console.log(data);
+      setClientID(data.clientID);
     });
 
     return () => {
@@ -32,8 +35,15 @@ function App() {
       socket.emit("login", address);
     } else {
       socket.emit("logout");
+      setClientID("");
     }
   }, [isConnected, address]);
+
+  function LoginToSpotify() {
+    var spotifyApi = new SpotifyWebApi();
+    console.log(spotifyApi);
+    console.log(spotifyApi.getAccessToken());
+  }
 
   return (
     <div>
@@ -45,6 +55,19 @@ function App() {
       <div className="flex justify-center">
       <ConnectButton />
       </div>
+
+      <div className="button text-center">
+        {clientID ? (
+          <button onClick={LoginToSpotify}>Log into Spotify</button>
+        ) : (
+          <h1></h1>
+        )}
+      </div>
+
+      <div>
+
+      </div>
+           
     </div>
   );
 }

@@ -26,7 +26,6 @@ const io = require('socket.io')(server, {
 const version = "0.0.001";
 const mode = 'DEVELOP';
 const port = 8080;
-let users = 0;
 
 async function main() {
     debug.log(`...> running version ${version} in ${mode}`);
@@ -121,7 +120,6 @@ async function serve() {
 
                 await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
             }
-            users = users + 1;
 
             var return_data = {
                 clientID: client.id,
@@ -142,8 +140,6 @@ async function serve() {
             //var result = await db.Query('UPDATE users SET nft=? WHERE id=?', [-1, client.id]);
             await db.Query('DELETE FROM users WHERE id=?', [client.id]);
 
-            users = users - 1;
-
             client.emit('logout', true);
         });
 
@@ -153,7 +149,7 @@ async function serve() {
             //  set a new id for the User
             await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
 
-            users = users + 1;
+            client.join("time-room");
 
             client.emit('start');
         });
@@ -164,7 +160,7 @@ async function serve() {
             //  clear the Users id
             await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
 
-            users = users - 1;
+            client.leave("time-room");
 
             client.emit('stop');
         });
