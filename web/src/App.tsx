@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
+import Login from "./Login";
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
 const SpotifyWebApi = require("spotify-web-api-node");
 
-import Login from "./Login";
-
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");
+  // replace with what gets returned from loging into spotify
   const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ function App() {
     }
   }, [isConnected, address]);
 
-  function LoginToSpotify() {
+  function loginToSpotify() {
     var spotifyApi = new SpotifyWebApi();
     console.log(spotifyApi);
     console.log(spotifyApi.getAccessToken());
@@ -53,18 +53,8 @@ function App() {
       {address && isConnected && isSpotifyLoggedIn ? (
         <h1>logged in</h1>
       ) : (
-        <Login setIsSpotifyLoggedIn={setIsSpotifyLoggedIn} />
+        <Login loginToSpotify={loginToSpotify} clientID={clientID} />
       )}
-
-      <div className="button text-center">
-        {clientID ? (
-          <button onClick={LoginToSpotify}>Log into Spotify</button>
-        ) : (
-          <h1></h1>
-        )}
-      </div>
-
-      <div></div>
     </div>
   );
 }
