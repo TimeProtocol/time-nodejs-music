@@ -4,6 +4,8 @@ import { useAccount } from "wagmi";
 import io from "socket.io-client";
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
 const SpotifyWebApi = require('spotify-web-api-node');
+const SpotifyWebApiServer = require('spotify-web-api-node/src/server-methods');
+(SpotifyWebApi as unknown as { _addMethods: (fncs: unknown) => void })._addMethods(SpotifyWebApiServer);
 
 function App() {
   const { address, isConnected } = useAccount();
@@ -40,8 +42,23 @@ function App() {
   }, [isConnected, address]);
 
   function LoginToSpotify() {
-    var spotifyApi = new SpotifyWebApi();
-    console.log(spotifyApi);
+    var scopes = ['user-read-playback-state'];
+    var spotifyApi = new SpotifyWebApi({
+      clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
+      redirectUri: process.env.REACT_APP_FRONTEND_ENDPOINT,
+      //redirectUri: "http://localhost/"
+    });
+    var authorizeURL = spotifyApi.createAuthorizeURL(scopes, 'state');
+    window.open(authorizeURL);
+  }
+
+  function test() {
+    var scopes = ['user-read-playback-state'];
+    var spotifyApi = new SpotifyWebApi({
+      clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
+      redirectUri: process.env.REACT_APP_FRONTEND_ENDPOINT,
+      //redirectUri: "http://localhost/"
+    });
     console.log(spotifyApi.getAccessToken());
   }
 
@@ -64,8 +81,8 @@ function App() {
         )}
       </div>
 
-      <div>
-
+      <div className="button text-center">
+          <button onClick={test}>test</button>
       </div>
            
     </div>
