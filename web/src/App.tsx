@@ -4,15 +4,13 @@ import io from "socket.io-client";
 import Login from "./Login";
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
-const SpotifyWebApi = require('spotify-web-api-node');
-const SpotifyWebApiServer = require('spotify-web-api-node/src/server-methods');
-(SpotifyWebApi as unknown as { _addMethods: (fncs: unknown) => void })._addMethods(SpotifyWebApiServer);
 
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");
-  // replace with what gets returned from loging into spotify
+  // replace with what gets returned from logging into Spotify
   const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -46,23 +44,15 @@ function App() {
 
   function LoginToSpotify() {
     var scopes = ['user-read-playback-state'];
-    var spotifyApi = new SpotifyWebApi({
-      clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
-      redirectUri: process.env.REACT_APP_FRONTEND_ENDPOINT,
-      //redirectUri: "http://localhost/"
-    });
-    var authorizeURL = spotifyApi.createAuthorizeURL(scopes, 'state');
-    window.open(authorizeURL);
+    var url = 'https://accounts.spotify.com/authorize';
+    url += '?response_type=token';
+    url += '&client_id=' + process.env.REACT_APP_SPOTIFY_CLIENT_ID;
+    url += '&redirect_uri=' + process.env.REACT_APP_FRONTEND_ENDPOINT;
+    window.location.replace(url);
   }
 
-  function test() {
-    var scopes = ['user-read-playback-state'];
-    var spotifyApi = new SpotifyWebApi({
-      clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
-      redirectUri: process.env.REACT_APP_FRONTEND_ENDPOINT,
-      //redirectUri: "http://localhost/"
-    });
-    console.log(spotifyApi.getAccessToken());
+  function listTracks() {
+
   }
 
   return (
@@ -70,24 +60,8 @@ function App() {
       {address && isConnected && isSpotifyLoggedIn ? (
         <h1>logged in</h1>
       ) : (
-        <Login loginToSpotify={loginToSpotify} clientID={clientID} />
+        <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}
-      <div className="flex justify-center">
-      <ConnectButton />
-      </div>
-
-      <div className="button text-center">
-        {clientID ? (
-          <button onClick={LoginToSpotify}>Log into Spotify</button>
-        ) : (
-          <h1></h1>
-        )}
-      </div>
-
-      <div className="button text-center">
-          <button onClick={test}>test</button>
-      </div>
-           
     </div>
   );
 }

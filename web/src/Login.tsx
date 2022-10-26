@@ -2,11 +2,11 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import clsx from "clsx";
 
 interface LoginProps {
-  loginToSpotify: () => void;
+  LoginToSpotify: () => void;
   clientID: string;
 }
 
-function Login({ loginToSpotify, clientID }: LoginProps) {
+function Login({ LoginToSpotify, clientID }: LoginProps) {
   return (
     <div className="bg-black/30 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
       <div className="mb-12">
@@ -21,7 +21,7 @@ function Login({ loginToSpotify, clientID }: LoginProps) {
           Login with your Spotify account
         </p>
         <button
-          onClick={loginToSpotify}
+          onClick={LoginToSpotify}
           disabled={!clientID}
           className={clsx(
             "inline-block border rounded text-center transition text-white py-2 px-4 text-base font-bold",
