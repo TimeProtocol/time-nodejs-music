@@ -2,18 +2,15 @@ import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
 import Login from "./Login";
-import Player from "./Player";
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
-
-const code = new URLSearchParams(window.location.hash);//.get('#access_token');
-const access_token = new URLSearchParams(window.location.hash).get('#access_token');
 
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");
   // replace with what gets returned from logging into Spotify
   const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -46,19 +43,22 @@ function App() {
   }, [isConnected, address]);
 
   function LoginToSpotify() {
-    var scopes = [`streaming`, 'user-read-playback-state'];
+    var scopes = ['user-read-playback-state'];
     var url = 'https://accounts.spotify.com/authorize';
     url += '?response_type=token';
     url += '&client_id=' + process.env.REACT_APP_SPOTIFY_CLIENT_ID;
     url += '&redirect_uri=' + process.env.REACT_APP_FRONTEND_ENDPOINT;
-    url += '&scopes=' + scopes;
     window.location.replace(url);
+  }
+
+  function listTracks() {
+
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
-      {address && isConnected && code ? (
-        <h1>{access_token}</h1>
+      {address && isConnected && isSpotifyLoggedIn ? (
+        <h1>logged in</h1>
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}
