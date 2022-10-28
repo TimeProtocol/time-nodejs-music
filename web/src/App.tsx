@@ -6,6 +6,8 @@ import Login from "./Login";
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
 const SpotifyWebApi = require("spotify-web-api-node");
 
+console.log(process.env.REACT_APP_TIME_ENDPOINT);
+
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");

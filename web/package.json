@@ -22,9 +22,11 @@
     "spotify-web-api-node": "^5.0.2",
     "typescript": "^4.8.4",
     "wagmi": "^0.7.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "axios": "^0.21.1",
+    "react-spotify-web-playback": "^0.8.1"
   },
-  "proxy": "http://localhost:5001",
+  "proxy": "http://localhost:8080",
   "scripts": {
     "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
     "build": "react-scripts build",

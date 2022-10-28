@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "lyrics-finder": "^21.7.0",
+    "spotify-web-api-node": "^5.0.2",
     "create-empty-project": "^1.0.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
@@ -8,5 +12,14 @@
     "httpolyglot": "^0.1.2",
     "promise-mysql": "^5.2.0",
     "socket.io": "^4.5.3"
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^2.0.6",
+    "request": "^2.88.2",
+    "nodemon": "^2.0.7"
+  },
+  "scripts": {
+    "devStart": "nodemon server.js",
+    "start": "node server.js"
   }
 }
