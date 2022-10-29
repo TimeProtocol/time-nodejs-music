@@ -66,11 +66,6 @@ async function serve() {
         console.log(``);
     });
 
-    app.get('/login', async function return_spotify_token(req, res) {
-        debug.log(`ASS`);
-        debug.log(req.body);
-    });
-
     app.post('/users', async function return_id_and_nft(req, res) {
 
         //  chainlink node is calling the Users table for the Users id and NFT values
