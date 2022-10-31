@@ -29,32 +29,39 @@ function Player({ access_token , trackUri, socket }: PlayerProps ) {
         setPlay(true);
     });
 
+    useEffect(() => {
+        
+    });
+
     return (
-    <div className="bg-black/30 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
-        <div className="mb-12">
+    <div>
+{/*         <div className="mb-12">
             <div className="flex justify-center">
                 <Container className="d-flex flex-column" style={{
                     height: "10vh",
                     color: "#fff",
                     }}>
-                    <Form.Control 
+
+                    <p>poop</p>
+                     <Form.Control
                     type="search"
-                    placeholder="Search" 
-                    value={search} 
+                    placeholder="Search"
+                    value={search}
                     onChange={e => setSearch(e.target.value)} />
                 </Container>
             </div>
-        </div>
+        </div> */}
 
         <div className="mb-6">
             <img src={trackImage} />
         </div>
+
         {
             <SpotifyPlayer 
                 token={access_token}
                 showSaveIcon
                 callback={state => {
-                    console.log(state);
+                    //console.log(state);
                     if (state.track.uri != trackUri) {
                         const spotifyApi = new SpotifyWebApi({
                             redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,

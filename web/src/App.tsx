@@ -3,6 +3,7 @@ import { useAccount } from "wagmi";
 import io from "socket.io-client";
 import Login from "./Login";
 import Player from "./Player";
+import Dashboard from "./Dashboard";
 const SpotifyWebApi = require('spotify-web-api-node');
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
@@ -52,11 +53,6 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   let tracks: any[] = [];
   const [playingTrack, setPlayingTrack] = useState("");
-  let trackImage = "";
-
-  //function chooseTrack(track: string) {
-    //setPlayingTrack(track);
-  //}
 
   function Spotify() {
     if (access_token) {
@@ -66,17 +62,17 @@ function App() {
         clientSecret : process.env.REACT_APP_SPOTIFY_CLIENT_SECRET
       });
       spotifyApi.setAccessToken(access_token);
-      spotifyApi.getAlbum('6oYvjbrNIu0lA5QAi33K1q').then((data: any) => {
+/*       spotifyApi.getAlbum('6oYvjbrNIu0lA5QAi33K1q').then((data: any) => {
         for(const index in data.body.tracks.items) {
           var uri = data.body.tracks.items[index].uri;
           tracks.push(uri);
         }
-        console.log(tracks);
-      });
+        //console.log(tracks);
+      }); */
       spotifyApi.getMyDevices().then((data: any) => {
         spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
-          console.log(data.body.item.album.images[0].url);
-          trackImage = data.body.item.album.images[0].url;
+          //console.log(data.body.item.album.images[0].url);
+          //trackImage = data.body.item.album.images[0].url;
           var URI = data.body.item.uri;
           setPlayingTrack(URI);
         });
@@ -87,9 +83,9 @@ function App() {
   useEffect(() => {
     if (access_token === code) {
       window.history.pushState({}, "", "/");
-      console.log(code);
-      console.log(access_token);
-      console.log(loggedIn);
+      //console.log(code);
+      //console.log(access_token);
+      //console.log(loggedIn);
       setLoggedIn(true);
       code = new URLSearchParams(window.location.hash).get('#access_token');
       Spotify();
@@ -110,7 +106,8 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
       {address && isConnected && tracks && code == null && access_token ? (
-        <Player access_token={access_token} trackUri={tracks[0]} socket={socket} />
+        //<Player access_token={access_token} trackUri={tracks[0]} socket={socket} />
+        <Dashboard access_token={access_token} socket={socket} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}
