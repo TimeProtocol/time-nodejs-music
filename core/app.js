@@ -1,4 +1,5 @@
 const ethers = require("ethers");
+const cors = require("cors");
 const dir = __dirname;
 require("dotenv").config({ path: dir + "/.env" });
 const tools = require("./packages/tools.js");
@@ -8,9 +9,12 @@ const db = require("./packages/db.js");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
+const SpotifyWebApi = require("spotify-web-api-node");
+
 const app = express();
 app.use(express.json());
 app.use(require("body-parser").urlencoded({ extended: true }));
+app.use(cors());
 const options = {
   key: fs.readFileSync("server.key"),
   cert: fs.readFileSync("server.cert"),
@@ -71,6 +75,10 @@ async function serve() {
     console.log(``);
   });
 
+  const buildDir = path.join(__dirname, "..", "client", "build");
+
+  app.use(express.static(buildDir));
+
   app.post("/users", async function return_id_and_nft(req, res) {
     //  chainlink node is calling the Users table for the Users id and NFT values
     if (req.body.address) {
@@ -100,104 +108,87 @@ async function serve() {
       res.send(query);
     }
   });
-  var generateRandomString = function (length) {
-    var text = "";
-    var possible =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for (var i = 0; i < length; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-  };
-
-  var spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
-  var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
-
-  app.get("/auth/login", (req, res) => {
-    var scope =
-      "streaming \
-                 user-read-email \
-                 user-read-private";
-
-    var state = generateRandomString(16);
-
-    var auth_query_parameters = new URLSearchParams({
-      response_type: "code",
-      client_id: spotify_client_id,
-      scope: scope,
-      redirect_uri: "http://localhost:3000/auth/callback",
-      state: state,
+  app.post("/refresh", (req, res) => {
+    const refreshToken = req.body.refreshToken;
+    const spotifyApi = new SpotifyWebApi({
+      redirectUri: process.env.REDIRECT_URI,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken,
     });
 
-    res.redirect(
-      "https://accounts.spotify.com/authorize/?" +
-        auth_query_parameters.toString()
-    );
+    spotifyApi
+      .refreshAccessToken()
+      .then((data) => {
+        res.json({
+          accessToken: data.body.access_token,
+          expiresIn: data.body.expires_in,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.sendStatus(400);
+      });
   });
 
-  app.get("/auth/callback", (req, res) => {
-    var code = req.query.code;
+  app.post("/login", (req, res) => {
+    const code = req.body.code;
 
-    var authOptions = {
-      url: "https://accounts.spotify.com/api/token",
-      form: {
-        code: code,
-        redirect_uri: "http://localhost:3000/auth/callback",
-        grant_type: "authorization_code",
-      },
-      headers: {
-        Authorization:
-          "Basic " +
-          Buffer.from(spotify_client_id + ":" + spotify_client_secret).toString(
-            "base64"
-          ),
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      json: true,
-    };
-
-    request.post(authOptions, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        var access_token = body.access_token;
-        res.redirect("/");
-      }
+    const spotifyApi = new SpotifyWebApi({
+      redirectUri: process.env.REDIRECT_URI,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
     });
+
+    spotifyApi
+      .authorizationCodeGrant(code)
+      .then((data) => {
+        res.json({
+          accessToken: data.body.access_token,
+          refreshToken: data.body.refresh_token,
+          expiresIn: data.body.expires_in,
+        });
+      })
+      .catch((err) => {
+        console.log("err: ", err);
+        res.sendStatus(400);
+      });
   });
 
   io.on("connection", async (client) => {
     client.on("login", async function socket_io_login(address) {
-      console.log("address: ", address);
+      console.log("login: ", address);
 
       //  check if this users already signed in
-      //   var result = await db.Query(`SELECT * FROM users WHERE address=?`, [
+      // var result = await db.Query(`SELECT * FROM users WHERE address=?`, [
+      //   address,
+      // ]);
+
+      // //  let's sign this address in
+      // if (result.length === 0) {
+      //   debug.log(`this User is not signed in`);
+      //   debug.log(`new Users address: ${address}`);
+      //   debug.log(`client_id: ${client.id}`);
+
+      //   var result = await db.Query(
+      //     `INSERT INTO users (address, id, nft, requestID) VALUES (?, ?, ?, ?)`,
+      //     [address, client.id, -1, "-1"]
+      //   );
+      //   debug.log(`this User was successfully signed in`);
+      // }
+      // //  this address is already signed in
+      // else {
+      //   debug.log(`this User is signed in`);
+
+      //   await db.Query(`UPDATE users SET id=? WHERE address=?`, [
+      //     client.id,
       //     address,
       //   ]);
-
-      //   //  let's sign this address in
-      //   if (result.length === 0) {
-      //     debug.log(`this User is not signed in`);
-      //     debug.log(`new Users address: ${address}`);
-      //     debug.log(`client_id: ${client.id}`);
-
-      //     var result = await db.Query(
-      //       `INSERT INTO users (address, id, nft, requestID) VALUES (?, ?, ?, ?)`,
-      //       [address, client.id, -1, "-1"]
-      //     );
-      //     debug.log(`this User was successfully signed in`);
-      //   }
-      //   //  this address is already signed in
-      //   else {
-      //     debug.log(`this User is signed in`);
-
-      //     await db.Query(`UPDATE users SET id=? WHERE address=?`, [
-      //       client.id,
-      //       address,
-      //     ]);
-      //   }
+      // }
 
       var return_data = {
-        clientID: client.id,
+        clientID: "client.id",
         nft: -1,
         requestID: -1,
         // userNFTamount: await tools.balanceOf(address),
@@ -222,12 +213,12 @@ async function serve() {
       debug.log(`User ${client.id} has started!`);
 
       //  set a new id for the User
-      await db.Query(`UPDATE users SET id=? WHERE address=?`, [
-        client.id,
-        address,
-      ]);
+      // await db.Query(`UPDATE users SET id=? WHERE address=?`, [
+      //   client.id,
+      //   address,
+      // ]);
 
-      client.join("time-room");
+      // client.join("time-room");
 
       client.emit("start");
     });
@@ -236,9 +227,9 @@ async function serve() {
       debug.log(`User ${client.id} has stopped!`);
 
       //  clear the Users id
-      await db.Query("UPDATE users SET id=? WHERE id=?", [-1, client.id]);
+      // await db.Query("UPDATE users SET id=? WHERE id=?", [-1, client.id]);
 
-      client.leave("time-room");
+      // client.leave("time-room");
 
       client.emit("stop");
     });
