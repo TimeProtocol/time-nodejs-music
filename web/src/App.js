@@ -30,6 +30,14 @@ function App() {
       setClientID(data.clientID);
     });
 
+    socket.on("play", () => {
+      console.log("play");
+    });
+
+    socket.on("stop", () => {
+      console.log("stop");
+    });
+
     return () => {
       socket.off("connect");
       socket.off("disconnect");
