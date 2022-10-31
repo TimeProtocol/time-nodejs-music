@@ -52,7 +52,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   let tracks: any[] = [];
   const [playingTrack, setPlayingTrack] = useState("");
-  const [trackImage, setTrackImage] = useState("");
+  let trackImage = "";
 
   //function chooseTrack(track: string) {
     //setPlayingTrack(track);
@@ -60,9 +60,6 @@ function App() {
 
   function Spotify() {
     if (access_token) {
-      //console.log(access_token);
-      //console.log(token_type);
-      //console.log(expires_in);
       const spotifyApi = new SpotifyWebApi({
         redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,
         clientId : process.env.REACT_APP_SPOTIFY_CLIENT_ID,
@@ -70,31 +67,18 @@ function App() {
       });
       spotifyApi.setAccessToken(access_token);
       spotifyApi.getAlbum('6oYvjbrNIu0lA5QAi33K1q').then((data: any) => {
-        //console.log(data.body.images[0].url);
-        //setTrackImage(data.body.images[0].url);
-        //console.log(data.body.tracks.items.length);
-        //console.log(data.body.tracks.items);
         for(const index in data.body.tracks.items) {
           var uri = data.body.tracks.items[index].uri;
           tracks.push(uri);
-          //tracks[i] = data.body.tracks.items[i].uri;
         }
-        //setTracks(data.body.tracks.items);
         console.log(tracks);
       });
       spotifyApi.getMyDevices().then((data: any) => {
-        let deviceID = data.body.devices[0].id;
-        //console.log(deviceID);
-        //console.log(data.body.devices[0].id);
         spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
           console.log(data.body.item.album.images[0].url);
-          setTrackImage(data.body.item.album.images[0].url);
+          trackImage = data.body.item.album.images[0].url;
           var URI = data.body.item.uri;
-          //console.log(URI);
           setPlayingTrack(URI);
-          //console.log(data.body.item.uri);
-          //spotifyApi.play();
-          //spotifyApi.pause();
         });
       });
     }
@@ -126,7 +110,7 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
       {address && isConnected && tracks && code == null && access_token ? (
-        <Player access_token={access_token} trackUri={tracks[0]} trackImage={trackImage} socket={socket} />
+        <Player access_token={access_token} trackUri={tracks[0]} socket={socket} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}

@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import { Container, Form } from 'react-bootstrap'; 
-import { debug } from 'console';
+const SpotifyWebApi = require('spotify-web-api-node');
 
 interface PlayerProps {
     access_token: string;
     trackUri: any;
-    trackImage: string;
     socket: any;
 }
 
-function Player({ access_token , trackUri, trackImage, socket }: PlayerProps ) {
+function Player({ access_token , trackUri, socket }: PlayerProps ) {
 
     const [play, setPlay] = useState(false);
     const [search, setSearch] = useState("");
+    const [trackImage, setTrackImage] = useState("");
 
     useEffect(() => {
         console.log(`player has changed state to ${play}`);
@@ -24,6 +24,10 @@ function Player({ access_token , trackUri, trackImage, socket }: PlayerProps ) {
             socket.emit('stop');
         }
     }, [play]);
+
+    useEffect(() => {
+        setPlay(true);
+    });
 
     return (
     <div className="bg-black/30 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
@@ -51,14 +55,25 @@ function Player({ access_token , trackUri, trackImage, socket }: PlayerProps ) {
                 showSaveIcon
                 callback={state => {
                     console.log(state);
+                    if (state.track.uri != trackUri) {
+                        const spotifyApi = new SpotifyWebApi({
+                            redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,
+                            clientId : process.env.REACT_APP_SPOTIFY_CLIENT_ID,
+                            clientSecret : process.env.REACT_APP_SPOTIFY_CLIENT_SECRET
+                          });
+                        spotifyApi.setAccessToken(access_token);
+                        spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
+                            setTrackImage(data.body.item.album.images[0].url);
+                        });
+                    }
                     if (!state.isPlaying) {
-                        setPlay(false)
+                        //setPlay(false);
                     }
                     else {
-                        setPlay(true);
+                        //setPlay(true);
                     }
                 }}
-                //play={play}
+                play={play}
                 //uris={trackUri ? [trackUri] : []}
                 uris={trackUri ? trackUri : ""}
 
