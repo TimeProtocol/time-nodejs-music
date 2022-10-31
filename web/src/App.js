@@ -5,16 +5,11 @@ import Login from "./Login";
 import Dashboard from "./Dashboard";
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
-const SpotifyWebApi = require("spotify-web-api-node");
-
 const code = new URLSearchParams(window.location.search).get("code");
 
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");
-  console.log("clientID: ", clientID);
-  // replace with what gets returned from loging into spotify
-  const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -54,18 +49,12 @@ function App() {
     }
   }, [isConnected, address]);
 
-  function loginToSpotify() {
-    var spotifyApi = new SpotifyWebApi();
-    console.log(spotifyApi);
-    console.log(spotifyApi.getAccessToken());
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
-      {address && isConnected && code ? (
+      {address && isConnected && clientID && code ? (
         <Dashboard code={code} />
       ) : (
-        <Login loginToSpotify={loginToSpotify} address={address} />
+        <Login clientID={clientID} />
       )}
     </div>
   );

@@ -8,7 +8,7 @@ export default function Player({ accessToken, trackUri }) {
 
   const handleClick = () => {
     if (play) socket.emit("stop");
-    socket.emit("start");
+    else socket.emit("start");
   };
 
   useEffect(() => {
@@ -33,9 +33,6 @@ export default function Player({ accessToken, trackUri }) {
         showSaveIcon
         play={play}
         uris={trackUri ? [trackUri] : []}
-        callback={(state) => {
-          console.log("state: ", state);
-        }}
       />
       {trackUri && (
         <button
