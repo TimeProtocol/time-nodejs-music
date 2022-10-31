@@ -7,12 +7,23 @@ interface PlayerProps {
     access_token: string;
     trackUri: any;
     trackImage: string;
+    socket: any;
 }
 
-function Player({ access_token , trackUri, trackImage }: PlayerProps ) {
+function Player({ access_token , trackUri, trackImage, socket }: PlayerProps ) {
 
     const [play, setPlay] = useState(false);
     const [search, setSearch] = useState("");
+
+    useEffect(() => {
+        console.log(`player has changed state to ${play}`);
+        if (play) {
+            socket.emit('start');
+        }
+        else {
+            socket.emit('stop');
+        }
+    }, [play]);
 
     return (
     <div className="bg-black/30 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
@@ -39,17 +50,15 @@ function Player({ access_token , trackUri, trackImage }: PlayerProps ) {
                 token={access_token}
                 showSaveIcon
                 callback={state => {
-                    console.log(state); 
+                    console.log(state);
                     if (!state.isPlaying) {
-                        //setPlay(false)
-                        console.log(`player turned off`);
+                        setPlay(false)
                     }
                     else {
-                        //setPlay(true);
-                        console.log(`player turned on`);
+                        setPlay(true);
                     }
                 }}
-                play={play}
+                //play={play}
                 //uris={trackUri ? [trackUri] : []}
                 uris={trackUri ? trackUri : ""}
 

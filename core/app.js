@@ -167,6 +167,13 @@ async function serve() {
 
     });
 
+
+    // NFT Mining Logic
+    // --> lets say we have 500 in a collection
+    // --> we want them mined over a period of 60 days
+    // --> that results in around 8-9 NFTs mined a day
+    // --> every 2.66 hours an NFT is served to a User (regardless if they mint it or not)
+
     async function mine() {
         //debug.log(`...> mining`);
     }
