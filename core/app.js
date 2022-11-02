@@ -5,6 +5,7 @@ const tools = require('./packages/tools.js');
 const eventlisteners = require('./packages/eventlisteners.js');
 const debug = require('./packages/debug.js');
 const db = require('./packages/db.js');
+var pson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -23,6 +24,7 @@ const io = require('socket.io')(server, {
     }
 });
 
+const version = pson.version;
 const mode = 'DEVELOP';
 const port = 8080;
 
@@ -136,30 +138,30 @@ async function serve() {
             client.emit('logout', true);
         });
 
-        client.on('start', async function socket_io_start(address) {
-            debug.log(`User ${client.id} has started!`);
+        client.on('start', async function socket_io_start(trackUri) {
+            debug.log(`User ${client.id} has started listening to ${trackUri}`);
 
             //  set a new id for the User
-            await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
+            //await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
 
-            var rooms = io.of(`/time-room`).adapter.rooms;
-            var sids = io.of(`/`).adapter.sids;
+            //var rooms = io.of(`/time-room`).adapter.rooms;
+            //var sids = io.of(`/`).adapter.sids;
 
-            debug.log(rooms);
-            debug.log(sids);
+            //debug.log(rooms);
+            //debug.log(sids);
 
-            client.join("time-room");
+            client.join(`${trackUri}`);
 
             client.emit('start');
         });
 
-        client.on('stop', async function socket_io_stop() {
-            debug.log(`User ${client.id} has stopped!`);
+        client.on('stop', async function socket_io_stop(trackUri) {
+            debug.log(`User ${client.id} has stopped listening to ${trackUri}`);
             
             //  clear the Users id
-            await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
+            // await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
 
-            client.leave("time-room");
+            client.leave(`${trackUri}`);
 
             client.emit('stop');
         });

@@ -1,92 +1,84 @@
 import { useEffect, useState } from 'react';
 import SpotifyPlayer from 'react-spotify-web-playback';
-import { Container, Form } from 'react-bootstrap'; 
 const SpotifyWebApi = require('spotify-web-api-node');
 
 interface PlayerProps {
     access_token: string;
-    trackUri: any;
     socket: any;
 }
 
-function Player({ access_token , trackUri, socket }: PlayerProps ) {
+function Player({ access_token, socket }: PlayerProps ) {
 
     const [play, setPlay] = useState(false);
-    const [search, setSearch] = useState("");
     const [trackImage, setTrackImage] = useState("");
+    const [trackUri, setTrackUri] = useState("");
 
-    useEffect(() => {
-        console.log(`player has changed state to ${play}`);
+    const spotifyApi = new SpotifyWebApi({
+        redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,
+        clientId : process.env.REACT_APP_SPOTIFY_CLIENT_ID,
+        clientSecret : process.env.REACT_APP_SPOTIFY_CLIENT_SECRET
+      });
+    spotifyApi.setAccessToken(access_token);
+    spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
+        setTrackImage(data.body.item.album.images[0].url);
+        setTrackUri(data.body.item.uri);
+    });
+
+    const handleClick = () => {
         if (play) {
-            socket.emit('start');
+            socket.emit("stop", trackUri);
         }
         else {
-            socket.emit('stop');
+            socket.emit("start", trackUri);
         }
-    }, [play]);
+    };
 
-    useEffect(() => {
+    ////  socket.io
+  useEffect(() => {
+    socket.on("start", () => {
         setPlay(true);
     });
+    socket.on("stop", () => {
+        setPlay(false);
+    });
+  });
+
+    useEffect(() => {
+        //if (trackUri) socket.emit("start", trackUri);
+    }, [trackUri]);
 
     return (
     <div>
-{/*         <div className="mb-12">
-            <div className="flex justify-center">
-                <Container className="d-flex flex-column" style={{
-                    height: "10vh",
-                    color: "#fff",
-                    }}>
-
-                    <p>poop</p>
-                     <Form.Control
-                    type="search"
-                    placeholder="Search"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)} />
-                </Container>
-            </div>
-        </div> */}
-
         <div className="mb-6">
             <img src={trackImage} />
         </div>
 
         {
-            <SpotifyPlayer 
-                token={access_token}
-                showSaveIcon
-                callback={state => {
-                    //console.log(state);
-                    if (state.track.uri != trackUri) {
-                        const spotifyApi = new SpotifyWebApi({
-                            redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,
-                            clientId : process.env.REACT_APP_SPOTIFY_CLIENT_ID,
-                            clientSecret : process.env.REACT_APP_SPOTIFY_CLIENT_SECRET
-                          });
-                        spotifyApi.setAccessToken(access_token);
-                        spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
-                            setTrackImage(data.body.item.album.images[0].url);
-                        });
-                    }
-                    if (!state.isPlaying) {
-                        //setPlay(false);
-                    }
-                    else {
-                        //setPlay(true);
-                    }
-                }}
-                play={play}
-                //uris={trackUri ? [trackUri] : []}
-                uris={trackUri ? trackUri : ""}
-
-                styles={{
-                    activeColor: '#fff',
-                    bgColor: '#333',
-                    color: '#abc'
-                }}
-            />
+            <div className="relative">
+                <SpotifyPlayer 
+                    token={access_token}
+                    showSaveIcon
+                    callback={state => {
+                        if (state.track.uri != trackUri) {
+                            spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
+                                setTrackImage(data.body.item.album.images[0].url);
+                                setTrackUri(state.track.uri);
+                            });
+                        }
+                    }}
+                    play={play}
+                    uris={trackUri ? trackUri : ""}
+                    styles={{
+                        activeColor: '#fff',
+                        bgColor: '#333',
+                        color: '#abc'
+                    }}
+                />
+            </div>
         }
+        <div>
+            <button onClick={handleClick}>Play</button>
+        </div>
     </div>
     );
 }

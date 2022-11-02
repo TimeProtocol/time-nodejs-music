@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import io from "socket.io-client";
 import Login from "./Login";
-import Player from "./Player";
 import Dashboard from "./Dashboard";
 const SpotifyWebApi = require('spotify-web-api-node');
 
@@ -49,7 +48,6 @@ function App() {
 
 
   ////  spotify
-  const [loggedIn, setLoggedIn] = useState(false);
   let tracks: any[] = [];
   const [playingTrack, setPlayingTrack] = useState("");
 
@@ -73,7 +71,6 @@ function App() {
   useEffect(() => {
     if (access_token === code) {
       window.history.pushState({}, "", "/");
-      setLoggedIn(true);
       code = new URLSearchParams(window.location.hash).get('#access_token');
       Spotify();
     }
@@ -93,7 +90,6 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
       {address && isConnected && tracks && code == null && access_token ? (
-        //<Player access_token={access_token} trackUri={tracks[0]} socket={socket} />
         <Dashboard access_token={access_token} socket={socket} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />

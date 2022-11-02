@@ -11,7 +11,6 @@ interface DashboardProps {
 
 function Dashboard({ access_token, socket }: DashboardProps) {
 
-    const [trackUri, setTrackUri] = useState("");
     //const [albumData, setAlbumData] = useState([]);
     let albumData : Object;
 
@@ -29,7 +28,6 @@ function Dashboard({ access_token, socket }: DashboardProps) {
             });
             spotifyApi.getMyCurrentPlayingTrack().then((res: any) => {
                 console.log(res);
-                //setPlayingTrack
             });
         //}
     });
@@ -39,7 +37,7 @@ function Dashboard({ access_token, socket }: DashboardProps) {
 {/*            <div>
                 {albumData.images[0]}
             </div> */}
-            <Player access_token={access_token} trackUri={trackUri} socket={socket} />
+            <Player access_token={access_token} socket={socket} />
         </div>
     );
 
