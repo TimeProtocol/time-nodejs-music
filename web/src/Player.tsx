@@ -29,10 +29,6 @@ function Player({ access_token , trackUri, socket }: PlayerProps ) {
         setPlay(true);
     });
 
-    useEffect(() => {
-        
-    });
-
     return (
     <div>
 {/*         <div className="mb-12">

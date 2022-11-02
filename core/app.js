@@ -28,8 +28,8 @@ const mode = 'DEVELOP';
 const port = 8080;
 
 async function main() {
-    debug.log(`...> running version ${version} in ${mode}`);
     debug.section(`=====     WELCOME TO TIME     =====`, `\x1b[32m%s\x1b[0m`);
+    debug.log(`...> running version ${version} in ${mode}`);
 
     //  db boot sequence
     try {
@@ -107,12 +107,9 @@ async function serve() {
 
             //  let's sign this address in
             if (result.length === 0) {
-                debug.log(`this User is not signed in`);
-                debug.log(`new Users address: ${address}`);
-                debug.log(`client_id: ${client.id}`);
+                debug.log(`login: ${address}`);
 
                 var result = await db.Query(`INSERT INTO users (address, id, nft, requestID) VALUES (?, ?, ?, ?)`, [address, client.id, -1, "-1"]);
-                debug.log(`this User was successfully signed in`);
             }
             //  this address is already signed in
             else {
@@ -129,15 +126,12 @@ async function serve() {
                 contractNFTamount: await tools.balanceOf(),
             }
 
-            //debug.log(return_data);
-
             client.emit('login', return_data);
         });
 
         client.on('logout', async function socket_io_logout() {
             debug.log(`User ${client.id} has logged out!`);
 
-            //var result = await db.Query('UPDATE users SET nft=? WHERE id=?', [-1, client.id]);
             await db.Query('DELETE FROM users WHERE id=?', [client.id]);
 
             client.emit('logout', true);
@@ -167,12 +161,12 @@ async function serve() {
 
     });
 
-
-    // NFT Mining Logic
-    // --> lets say we have 500 in a collection
-    // --> we want them mined over a period of 60 days
-    // --> that results in around 8-9 NFTs mined a day
-    // --> every 2.66 hours an NFT is served to a User (regardless if they mint it or not)
+    /* NFT Mining Logic
+      --> lets say we have 500 in a collection
+      --> we want them mined over a period of 60 days
+      --> that results in around 8-9 NFTs mined a day
+      --> every 2.66 hours an NFT is served to a User (regardless if they mint it or not)
+    */
 
     async function mine() {
         //debug.log(`...> mining`);
