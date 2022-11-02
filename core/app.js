@@ -23,7 +23,6 @@ const io = require('socket.io')(server, {
     }
 });
 
-const version = "0.0.001";
 const mode = 'DEVELOP';
 const port = 8080;
 
@@ -142,6 +141,12 @@ async function serve() {
 
             //  set a new id for the User
             await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
+
+            var rooms = io.of(`/time-room`).adapter.rooms;
+            var sids = io.of(`/`).adapter.sids;
+
+            debug.log(rooms);
+            debug.log(sids);
 
             client.join("time-room");
 

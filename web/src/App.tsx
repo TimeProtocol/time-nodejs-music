@@ -28,7 +28,6 @@ function App() {
     });
 
     socket.on("login", (data) => {
-      //console.log(data);
       setClientID(data.clientID);
     });
 
@@ -62,17 +61,8 @@ function App() {
         clientSecret : process.env.REACT_APP_SPOTIFY_CLIENT_SECRET
       });
       spotifyApi.setAccessToken(access_token);
-/*       spotifyApi.getAlbum('6oYvjbrNIu0lA5QAi33K1q').then((data: any) => {
-        for(const index in data.body.tracks.items) {
-          var uri = data.body.tracks.items[index].uri;
-          tracks.push(uri);
-        }
-        //console.log(tracks);
-      }); */
       spotifyApi.getMyDevices().then((data: any) => {
         spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
-          //console.log(data.body.item.album.images[0].url);
-          //trackImage = data.body.item.album.images[0].url;
           var URI = data.body.item.uri;
           setPlayingTrack(URI);
         });
@@ -83,9 +73,6 @@ function App() {
   useEffect(() => {
     if (access_token === code) {
       window.history.pushState({}, "", "/");
-      //console.log(code);
-      //console.log(access_token);
-      //console.log(loggedIn);
       setLoggedIn(true);
       code = new URLSearchParams(window.location.hash).get('#access_token');
       Spotify();

@@ -1,4 +1,10 @@
 {
+  "name": "time",
+  "version": "0.0.1",
+  "description": "Since you people can't do anything right looks like I have to",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
   "dependencies": {
     "create-empty-project": "^1.0.0",
     "dotenv": "^16.0.3",
@@ -6,6 +12,7 @@
     "express": "^4.18.2",
     "fs": "^0.0.1-security",
     "httpolyglot": "^0.1.2",
+    "nodemon": "^2.0.20",
     "promise-mysql": "^5.2.0",
     "socket.io": "^4.5.3"
   }
