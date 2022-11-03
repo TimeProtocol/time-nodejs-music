@@ -4,14 +4,16 @@ const SpotifyWebApi = require('spotify-web-api-node');
 
 interface PlayerProps {
     access_token: string;
+    trackUri: string;
     socket: any;
 }
 
-function Player({ access_token, socket }: PlayerProps ) {
+function Player({ access_token, trackUri, socket }: PlayerProps ) {
 
     const [play, setPlay] = useState(false);
     const [trackImage, setTrackImage] = useState("");
-    const [trackUri, setTrackUri] = useState("");
+    //const [trackUri, setTrackUri] = useState("");
+    const [albumUri, setAlbumUri] = useState("");
 
     const spotifyApi = new SpotifyWebApi({
         redirectUri : process.env.REACT_APP_FRONTEND_ENDPOINT,
@@ -21,37 +23,14 @@ function Player({ access_token, socket }: PlayerProps ) {
     spotifyApi.setAccessToken(access_token);
     spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
         setTrackImage(data.body.item.album.images[0].url);
-        setTrackUri(data.body.item.uri);
+        //setTrackUri(data.body.item.uri);
     });
-
-    const handleClick = () => {
-        if (play) {
-            socket.emit("stop", trackUri);
-        }
-        else {
-            socket.emit("start", trackUri);
-        }
-    };
-
-    ////  socket.io
-  useEffect(() => {
-    socket.on("start", () => {
-        setPlay(true);
-    });
-    socket.on("stop", () => {
-        setPlay(false);
-    });
-  });
-
-    useEffect(() => {
-        //if (trackUri) socket.emit("start", trackUri);
-    }, [trackUri]);
 
     return (
     <div>
-        <div className="mb-6">
+{/*         <div className="mb-6">
             <img src={trackImage} />
-        </div>
+        </div> */}
 
         {
             <div className="relative">
@@ -62,7 +41,7 @@ function Player({ access_token, socket }: PlayerProps ) {
                         if (state.track.uri != trackUri) {
                             spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
                                 setTrackImage(data.body.item.album.images[0].url);
-                                setTrackUri(state.track.uri);
+                                //setTrackUri(state.track.uri);
                             });
                         }
                     }}
@@ -76,9 +55,6 @@ function Player({ access_token, socket }: PlayerProps ) {
                 />
             </div>
         }
-        <div>
-            <button onClick={handleClick}>Play</button>
-        </div>
     </div>
     );
 }

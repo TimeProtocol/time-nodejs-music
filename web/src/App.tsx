@@ -73,6 +73,7 @@ function App() {
       window.history.pushState({}, "", "/");
       code = new URLSearchParams(window.location.hash).get('#access_token');
       Spotify();
+      socket.emit("auth", access_token);
     }
   });
 
