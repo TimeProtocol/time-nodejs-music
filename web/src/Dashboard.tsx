@@ -16,6 +16,7 @@ function Dashboard({ access_token, socket }: DashboardProps) {
 
     //const [albumData, setAlbumData] = useState([]);
     let albumData : Object;
+    const [trackUri, setTrackUri] = useState("");
 
     const spotifyApi = new SpotifyWebApi({
         clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
@@ -31,6 +32,7 @@ function Dashboard({ access_token, socket }: DashboardProps) {
             });
             spotifyApi.getMyCurrentPlayingTrack().then((res: any) => {
                 console.log(res);
+                setTrackUri(res.body.item.uri);
             });
         //}
     });
@@ -41,7 +43,7 @@ function Dashboard({ access_token, socket }: DashboardProps) {
         {/*            <div>
                     {albumData.images[0]}
                 </div> */}
-        <Player access_token={access_token} socket={socket} />
+        <Player access_token={access_token} trackUri={trackUri} socket={socket} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 my-16">
         {images.map((image, i) => (

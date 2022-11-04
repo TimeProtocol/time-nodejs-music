@@ -30,14 +30,13 @@ module.exports = {
             users: 0
         }
 
+        const table_create_query = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT)`;
+
         //  Let's try to connect to the sql server using the default settings
         try {
             debug.log(`...establishing connection to the sql server using default settings`);
 
             var connection = await mysql.createPool(this.settings);
-            //debug.log(`...attempted pool connection: ${connection}`);
-            //debug.log(connection);
-
             var promise = await connection.query(`SELECT * FROM users`);
             await connection.end();
             
@@ -68,7 +67,7 @@ module.exports = {
                     //  Let's create a new table USERS
                     debug.log(`...attempting to create new table USERS`);
                     var connection = await mysql.createPool(settings);
-                    var tablePromise = await connection.query(`CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT)`);
+                    var tablePromise = await connection.query(table_create_query);
                     await connection.end();
                     debug.log(`...successfully created new table USERS`);
 
@@ -94,9 +93,7 @@ module.exports = {
 
             else if (err.code == `ER_NO_SUCH_TABLE` && (err.errno == 1146)) {
 
-                await this.Query(`CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT)`);
-
-                debug.log(`done creating table?`);
+                await this.Query(table_create_query);
 
                 map.error = false;
                 map.err = 

@@ -6,6 +6,7 @@ const eventlisteners = require('./packages/eventlisteners.js');
 const debug = require('./packages/debug.js');
 const db = require('./packages/db.js');
 var pson = require('./package.json');
+var music = require(`./packages/music.js`);
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -27,6 +28,8 @@ const io = require('socket.io')(server, {
 const version = pson.version;
 const mode = 'DEVELOP';
 const port = 8080;
+
+let users = 0;
 
 async function main() {
     debug.section(`=====     WELCOME TO TIME     =====`, `\x1b[32m%s\x1b[0m`);
@@ -93,7 +96,7 @@ async function serve() {
         
         //  requesting the users table
         if (req.url === "/users") {
-            var query = await db.Query('SELECT * FROM users');
+            var query = await db.Query('SELECT address, id, nft, requestID FROM users');
             res.send(query);
         }
 
@@ -138,6 +141,10 @@ async function serve() {
             client.emit('logout', true);
         });
 
+        client.on('auth', async function socket_io_auth(access_token) {
+            await db.Query(`UPDATE users SET spotify_access_token=? WHERE id=?`, [access_token, client.id]);
+        });
+
         client.on('start', async function socket_io_start(trackUri) {
             debug.log(`User ${client.id} has started listening to ${trackUri}`);
 
@@ -176,6 +183,13 @@ async function serve() {
     */
 
     async function mine() {
+        var promise = await db.Query(`SELECT address, spotify_access_token FROM users`);
+        for(var i=0;i<promise.length;i++) {
+            var address = promise[i].address;
+            var res = music.getPlayingTrack(address, music.createSpotifyApi(promise[i].spotify_access_token));
+            //debug.log(res);
+        }
+        //music.getPlayingTrack(music.createSpotifyApi());
         //debug.log(`...> mining`);
     }
     setInterval(mine, 1000);
