@@ -37,23 +37,25 @@ function Dashboard({ access_token, socket }: DashboardProps) {
         //}
     });
 
-  return (
+    const images = [image1, image2, image3]
+    
+    return (
     <>
-      <div className="bg-black/30 mt-16 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
+        <div className="bg-black/30 mt-16 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
         {/*            <div>
                     {albumData.images[0]}
                 </div> */}
         <Player access_token={access_token} trackUri={trackUri} socket={socket} />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 my-16">
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 my-16">
         {images.map((image, i) => (
-          <div className=" bg-black/30 p-4 w-full max-w-sm text-center  border-turquoise/50 rounded-md drop-shadow-2xl">
+            <div className=" bg-black/30 p-4 w-full max-w-sm text-center  border-turquoise/50 rounded-md drop-shadow-2xl">
             <img src={image} key={i} alt="" />
-          </div>
+            </div>
         ))}
-      </div>
+        </div>
     </>
-  );
+    );
 }
 
 export default Dashboard;
