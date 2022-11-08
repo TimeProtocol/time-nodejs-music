@@ -90,7 +90,7 @@ function App() {
   ////  main page
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
-      {address && isConnected && tracks && code && access_token ? (
+      {address && isConnected && tracks && access_token ? (
         <Dashboard access_token={access_token} socket={socket} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
