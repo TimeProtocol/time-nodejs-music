@@ -2,6 +2,7 @@
 //  ========
 
 const SpotifyWebApi = require('spotify-web-api-node');
+const db = require('./db.js');
 const debug = require(`./debug.js`);
 
 module.exports = {
@@ -16,7 +17,7 @@ module.exports = {
     },
 
     getPlayingTrack: async function(address, spotifyApi) {
-        if (spotifyApi.getAccessToken()) {
+        if (spotifyApi.getAccessToken() != null) {
             if (spotifyApi.getMyCurrentPlayingTrack().then(res => {
                 if (res.body.is_playing) {
                     //debug.log(res);
@@ -29,6 +30,8 @@ module.exports = {
                         return res;
                     }
                 }
+            }).catch((err) => {
+                debug.error(err);
             }));
         }
     }

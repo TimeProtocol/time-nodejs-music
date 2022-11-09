@@ -46,7 +46,6 @@ function App() {
     }
   }, [isConnected, address]);
 
-
   ////  spotify
   let tracks: any[] = [];
   const [playingTrack, setPlayingTrack] = useState("");
