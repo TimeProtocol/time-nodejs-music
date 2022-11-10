@@ -178,16 +178,15 @@ async function serve() {
     /* NFT Mining Logic
       --> lets say we have 300 in a collection
       --> we want them mined over a period of 60 days
-      --> that results in around 8-9 NFTs mined a day
-      --> every 2.66 hours an NFT is served to a User (regardless if they mint it or not)
+      --> that results in around 5 NFTs mined a day
+      --> every 4.8 hours an NFT is served to a User (regardless if they mint it or not)
     */
 
     async function mine() {
         var promise = await db.Query(`SELECT address, spotify_access_token FROM users WHERE spotify_access_token != ""`);
         for(var i=0;i<promise.length;i++) {
             var address = promise[i].address;
-            var res = music.getPlayingTrack(address, music.createSpotifyApi(promise[i].spotify_access_token));
-            //debug.log(res);
+            music.getPlayingTrack(address, music.createSpotifyApi(promise[i].spotify_access_token), io);
         }
     }
     setInterval(mine, 1000);

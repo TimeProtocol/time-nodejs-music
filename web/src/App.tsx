@@ -30,6 +30,11 @@ function App() {
       setClientID(data.clientID);
     });
 
+    socket.on("refreshAuth", (data) => {
+      console.log("REFRESHING SPOTIFY AUTH TOKEN");
+      LoginToSpotify();
+    });
+
     return () => {
       socket.off("connect");
       socket.off("disconnect");
@@ -68,7 +73,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (access_token === code) {
+    if (code != "" && access_token === code) {
       window.history.pushState({}, "", "/");
       code = new URLSearchParams(window.location.hash).get('#access_token');
       Spotify();
