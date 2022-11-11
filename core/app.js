@@ -117,10 +117,12 @@ async function serve() {
             }
             //  this address is already signed in
             else {
-                debug.log(`logging back in: ${address}`);
+                debug.log(`logging back in: ${address} with a new client id of ${client.id}`);
 
                 await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
             }
+
+            client.join(client.id);
 
             var return_data = {
                 clientID: client.id,
@@ -142,35 +144,8 @@ async function serve() {
         });
 
         client.on('auth', async function socket_io_auth(access_token) {
+            debug.log(`received Spotify Auth from ${client.id}`);
             await db.Query(`UPDATE users SET spotify_access_token=? WHERE id=?`, [access_token, client.id]);
-        });
-
-        client.on('start', async function socket_io_start(trackUri) {
-            debug.log(`User ${client.id} has started listening to ${trackUri}`);
-
-            //  set a new id for the User
-            //await db.Query(`UPDATE users SET id=? WHERE address=?`, [client.id, address]);
-
-            //var rooms = io.of(`/time-room`).adapter.rooms;
-            //var sids = io.of(`/`).adapter.sids;
-
-            //debug.log(rooms);
-            //debug.log(sids);
-
-            client.join(`${trackUri}`);
-
-            client.emit('start');
-        });
-
-        client.on('stop', async function socket_io_stop(trackUri) {
-            debug.log(`User ${client.id} has stopped listening to ${trackUri}`);
-            
-            //  clear the Users id
-            // await db.Query('UPDATE users SET id=? WHERE id=?', [-1, client.id]);
-
-            client.leave(`${trackUri}`);
-
-            client.emit('stop');
         });
 
     });
@@ -183,10 +158,32 @@ async function serve() {
     */
 
     async function mine() {
-        var promise = await db.Query(`SELECT address, spotify_access_token FROM users WHERE spotify_access_token != ""`);
-        for(var i=0;i<promise.length;i++) {
+        let promise = await db.Query(`SELECT address, spotify_access_token FROM users WHERE spotify_access_token != ""`);
+        for (var i=0;i<promise.length;i++) {
             var address = promise[i].address;
-            music.getPlayingTrack(address, music.createSpotifyApi(promise[i].spotify_access_token), io);
+            try {
+                var res = await music.getPlayingTrack(music.createSpotifyApi(promise[i].spotify_access_token));
+                if (res.body.is_playing) {
+                    if (res.body.item != null) {
+                        var trackName = res.body.item.name;
+                        var trackUri = res.body.item.uri;
+                        var albumUri = res.body.item.album.uri;
+                        debug.log(`address ${address} is currently mining for --> ${trackName}`);
+                        //debug.log(`albumUri: ${albumUri}`);
+                    }
+                }
+            } catch(err) {
+                //debug.error(err);
+
+                //  parse the error message, if the access_token is expired then send a request to the front-end app to do a Spotify Auth refresh
+                if (err.body.error.message == "The access token expired") {
+                    debug.error(`The access token expired!`);
+                    var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
+                    var clientID = clientPromise[0].id;
+
+                    io.to(clientID).emit("refreshAuth", {} );
+                }
+            }
         }
     }
     setInterval(mine, 1000);
