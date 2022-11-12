@@ -30,7 +30,8 @@ module.exports = {
             users: 0
         }
 
-        const table_create_query = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT, listened INT)`;
+        const table_create_query_users = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT, listened INT)`;
+        const table_create_query_nfts = `CREATE TABLE IF NOT EXISTS nfts (nft TEXT, lastServeTime TEXT, amount INT, daysToMine INT)`;
 
         //  Let's try to connect to the sql server using the default settings
         try {
@@ -38,6 +39,10 @@ module.exports = {
 
             var connection = await mysql.createPool(this.settings);
             var promise = await connection.query(`SELECT * FROM users`);
+            await connection.end();
+
+            var connection = await mysql.createPool(this.settings);
+            var promise = await connection.query(`SELECT * FROM nfts`);
             await connection.end();
             
             debug.log(`...successfully established connection to the sql server using default settings`);
@@ -55,7 +60,7 @@ module.exports = {
             if ((err.code == `ER_BAD_DB_ERROR`) && (err.errno == 1049)) {
                 debug.log(`!!! error with database`);
 
-                try {      
+                try {
 
                     //  Let's create a new database 'db'
                     debug.log(`...attempting to create new database`);
@@ -67,9 +72,16 @@ module.exports = {
                     //  Let's create a new table USERS
                     debug.log(`...attempting to create new table USERS`);
                     var connection = await mysql.createPool(settings);
-                    var tablePromise = await connection.query(table_create_query);
+                    var tablePromise = await connection.query(table_create_query_users);
                     await connection.end();
                     debug.log(`...successfully created new table USERS`);
+
+                    //  Let's create a new table NFTS
+                    debug.log(`...attempting to create new table NFTS`);
+                    var connection = await mysql.createPool(settings);
+                    var tablePromise = await connection.query(table_create_query_nfts);
+                    await connection.end();
+                    debug.log(`...successfully created new table NFTS`);
 
                     //  Let's do a test Query why don't we
                     var results = await this.Query(`SELECT * FROM users`);
@@ -79,7 +91,7 @@ module.exports = {
 
                     map.error = false;
                     map.err = err;
-                    map.results = `new database and table USERS created!`;
+                    map.results = `new database and table USERS and NFTS were created!`;
 
                     return map;
 
@@ -93,11 +105,12 @@ module.exports = {
 
             else if (err.code == `ER_NO_SUCH_TABLE` && (err.errno == 1146)) {
 
-                await this.Query(table_create_query);
+                await this.Query(table_create_query_users);
+                await this.Query(table_create_query_nfts);
 
                 map.error = false;
-                map.err = 
-                map.results = `new table USERS created`;
+                map.err = err;
+                map.results = `new table USERS and NFTS created`;
                 return map;
             }
         }

@@ -44,6 +44,31 @@ async function main() {
             debug.log(`database booted without errors!`);
             users = bootResult.users;
             debug.log(`number of Users that were signed in: ${users}`);
+
+            //  Check time since last NFT serve
+            let promise = await db.Query(`SELECT nft, lastServeTime, amount FROM nfts`);
+
+            //  This Node hasn't served any NFTs yet
+            if (promise.length == 0) {
+                debug.log(`this Node hasn't served any NFTs yet...`);
+
+                var date = new Date();
+                var hour = date.getHours();
+                if (hour > 12) hour = hour - 12;
+
+                var time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${hour}:${date.getMinutes()}:${date.getSeconds()}`;
+
+                await db.Query(`INSERT INTO nfts (nft, lastServeTime, amount, daysToMine) VALUES (?, ?, ?, ?)`, [ALBUM_URI, time, 300, 60]);
+            }
+            else {
+                for(var i=0;i<promise.length;i++) {
+                    var nft = promise[i].nft;
+                    var lastServeTime = promise[i].lastServeTime;
+                    var amount = promise[i].amount;
+                    debug.log(`nft [${nft}] was last served on [${lastServeTime}] and has [${amount}] left to mine`);
+                }
+            }
+
         } else {
             debug.log(`database booted with an error!`);
         }
@@ -178,7 +203,6 @@ async function serve() {
 
                         if (albumUri.includes(ALBUM_URI)) {
                             var currentAmount = await db.Query(`SELECT listened FROM users WHERE address=?`, [address]);
-                            //debug.log(currentAmount);
                             var newAmount = 0;
                             
                             //  First time listening to this album for this block
@@ -189,11 +213,11 @@ async function serve() {
                                 newAmount = currentAmount[0].listened + 1;
                             }
 
-                            //debug.log(`newAmount: ${newAmount}`);
                             await db.Query(`UPDATE users SET listened=? WHERE address=?`, [newAmount, address]);
+
+                            debug.log(`address ${address} is currently mining for --> track: [${trackName}] from album: [${albumName}]`);
                         }
 
-                        debug.log(`address ${address} is currently mining for --> track: [${trackName}] from album: [${albumName}]`);
                     }
                 }
             } catch(err) {
