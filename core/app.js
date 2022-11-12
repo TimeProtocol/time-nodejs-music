@@ -31,6 +31,8 @@ const port = 8080;
 
 let users = 0;
 
+const ALBUM_URI = "6oYvjbrNIu0lA5QAi33K1q";
+
 async function main() {
     debug.section(`=====     WELCOME TO TIME     =====`, `\x1b[32m%s\x1b[0m`);
     debug.log(`...> running version ${version} in ${mode}`);
@@ -159,29 +161,53 @@ async function serve() {
 
     async function mine() {
         let promise = await db.Query(`SELECT address, spotify_access_token FROM users WHERE spotify_access_token != ""`);
+
         for (var i=0;i<promise.length;i++) {
             var address = promise[i].address;
+            var access_token = promise[i].spotify_access_token;
             try {
-                var res = await music.getPlayingTrack(music.createSpotifyApi(promise[i].spotify_access_token));
+                var res = await music.getPlayingTrack(music.createSpotifyApi(access_token));
                 if (res.body.is_playing) {
                     if (res.body.item != null) {
+                        //debug.log(res.body);
+
                         var trackName = res.body.item.name;
+                        var albumName = res.body.item.album.name;
                         var trackUri = res.body.item.uri;
                         var albumUri = res.body.item.album.uri;
-                        debug.log(`address ${address} is currently mining for --> ${trackName}`);
-                        //debug.log(`albumUri: ${albumUri}`);
+
+                        if (albumUri.includes(ALBUM_URI)) {
+                            var currentAmount = await db.Query(`SELECT listened FROM users WHERE address=?`, [address]);
+                            //debug.log(currentAmount);
+                            var newAmount = 0;
+                            
+                            //  First time listening to this album for this block
+                            if (currentAmount[0].listened == null) {
+                                newAmount = 1;
+                            }
+                            else {
+                                newAmount = currentAmount[0].listened + 1;
+                            }
+
+                            //debug.log(`newAmount: ${newAmount}`);
+                            await db.Query(`UPDATE users SET listened=? WHERE address=?`, [newAmount, address]);
+                        }
+
+                        debug.log(`address ${address} is currently mining for --> track: [${trackName}] from album: [${albumName}]`);
                     }
                 }
             } catch(err) {
-                //debug.error(err);
+                debug.error(err);
 
-                //  parse the error message, if the access_token is expired then send a request to the front-end app to do a Spotify Auth refresh
-                if (err.body.error.message == "The access token expired") {
-                    debug.error(`The access token expired!`);
-                    var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
-                    var clientID = clientPromise[0].id;
+                if (err.body) {
+                    //  parse the error message, if the access_token is expired then send a request to the front-end app to do a Spotify Auth refresh
+                    if (err.body.error.message == "The access token expired") {
+                        debug.error(`The access token expired!`);
+                        var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
+                        var clientID = clientPromise[0].id;
 
-                    io.to(clientID).emit("refreshAuth", {} );
+                        io.to(clientID).emit("refreshAuth", {} );
+                    }
                 }
             }
         }

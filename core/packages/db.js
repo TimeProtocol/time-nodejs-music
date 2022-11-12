@@ -30,7 +30,7 @@ module.exports = {
             users: 0
         }
 
-        const table_create_query = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT)`;
+        const table_create_query = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT, listened INT)`;
 
         //  Let's try to connect to the sql server using the default settings
         try {
