@@ -6,7 +6,7 @@ const debug = require('./debug.js');
 
 module.exports = {
 
-    getRandomInt: function() {
+    getRandomInt: function(max) {
         return Math.floor(Math.random() * max); 
     },
 
