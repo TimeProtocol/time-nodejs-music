@@ -41,6 +41,10 @@ module.exports = {
         else if (typeof text == 'number') {
             console.log(`[${_function.toUpperCase()}] => ` + String(text));
         }
+        //  Text is a boolean
+        else if (typeof text == `boolean`) {
+            console.log(`[${_function.toUpperCase()}] => ` + text);
+        }
     },
 
     section: function(text, color="\x1b[0m") {
