@@ -225,7 +225,7 @@ async function serve() {
             } catch(err) {
                 debug.error(err);
 
-                if (err.body) {
+                if (err.body && err.body.error && err.body.message) {
                     //  parse the error message, if the access_token is expired then send a request to the front-end app to do a Spotify Auth refresh
                     if (err.body.error.message == "The access token expired") {
                         debug.error(`The access token expired!`);
@@ -250,17 +250,19 @@ async function serve() {
                 }
             }
 
-            //  listening time has been weighed out... time to select our random winner and which NFT they won
-            var length = array.length;
-            var random = tools.getRandomInt(length);
-            var winner = array[random][0];
-            var nft = tools.getRandomInt(3);
+            if (array.length != 0) {
+                //  listening time has been weighed out... time to select our random winner and which NFT they won
+                var length = array.length;
+                var random = tools.getRandomInt(length);
+                var winner = array[random][0];
+                var nft = tools.getRandomInt(3);
 
-            //  flip their NFT value from -1 to one of 3
-            await db.Query(`UPDATE users SET nft=? WHERE address=?`, [nft, winner]);
+                //  flip their NFT value from -1 to one of 3
+                await db.Query(`UPDATE users SET nft=? WHERE address=?`, [nft, winner]);
 
-            //  set last serve time to current time
-            await db.Query(`UPDATE nfts SET lastServeTimeMS=?, lastServeTimeString=?`, [tools.getCurrentTimeMS(), tools.getCurrentTimeString()]);
+                //  set last serve time to current time
+                await db.Query(`UPDATE nfts SET lastServeTimeMS=?, lastServeTimeString=?`, [tools.getCurrentTimeMS(), tools.getCurrentTimeString()]);
+            }
 
         }
     }
