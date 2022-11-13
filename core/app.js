@@ -46,26 +46,24 @@ async function main() {
             debug.log(`number of Users that were signed in: ${users}`);
 
             //  Check time since last NFT serve
-            let promise = await db.Query(`SELECT nft, lastServeTime, amount FROM nfts`);
+            let promise = await db.Query(`SELECT * FROM nfts`);
 
             //  This Node hasn't served any NFTs yet
             if (promise.length == 0) {
                 debug.log(`this Node hasn't served any NFTs yet...`);
 
-                var date = new Date();
-                var hour = date.getHours();
-                if (hour > 12) hour = hour - 12;
+                var timeString = tools.getCurrentTimeString();
+                var timeMS = tools.getCurrentTimeMS();
 
-                var time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${hour}:${date.getMinutes()}:${date.getSeconds()}`;
-
-                await db.Query(`INSERT INTO nfts (nft, lastServeTime, amount, daysToMine) VALUES (?, ?, ?, ?)`, [ALBUM_URI, time, 300, 60]);
+                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amount, daysToMine) VALUES (?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 60]);
             }
             else {
                 for(var i=0;i<promise.length;i++) {
                     var nft = promise[i].nft;
-                    var lastServeTime = promise[i].lastServeTime;
+                    var lastServeTimeString = promise[i].lastServeTimeString;
+                    var lastServeTimeMS = promise[i].lastServeTimeMS;
                     var amount = promise[i].amount;
-                    debug.log(`nft [${nft}] was last served on [${lastServeTime}] and has [${amount}] left to mine`);
+                    debug.log(`nft [${nft}] was last served on [${lastServeTimeString}] and has [${amount}] left to mine`);
                 }
             }
 
