@@ -55,15 +55,15 @@ async function main() {
                 var timeString = tools.getCurrentTimeString();
                 var timeMS = tools.getCurrentTimeMS();
 
-                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amount, daysToMine) VALUES (?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 60]);
+                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 60]);
             }
             else {
                 for(var i=0;i<promise.length;i++) {
                     var nft = promise[i].nft;
                     var lastServeTimeString = promise[i].lastServeTimeString;
                     var lastServeTimeMS = promise[i].lastServeTimeMS;
-                    var amount = promise[i].amount;
-                    debug.log(`nft [${nft}] was last served on [${lastServeTimeString}] and has [${amount}] left to mine`);
+                    var amountLeft = promise[i].amountLeft;
+                    debug.log(`nft [${nft}] was last served on [${lastServeTimeString}] and has [${amountLeft}] left to mine`);
                 }
             }
 
@@ -183,7 +183,11 @@ async function serve() {
     */
 
     async function mine() {
-        let promise = await db.Query(`SELECT address, spotify_access_token FROM users WHERE spotify_access_token != ""`);
+        let promise = await db.Query(`SELECT address, spotify_access_token, listened FROM users WHERE spotify_access_token != ""`);
+
+        //  compare current time to last serve time
+        var lastServeTimePromise = await db.Query(`SELECT lastServeTimeMS FROM nfts`);
+        var mintTime = await tools.compareTimes(tools.getCurrentTimeMS(), lastServeTimePromise[0].lastServeTimeMS);
 
         for (var i=0;i<promise.length;i++) {
             var address = promise[i].address;
@@ -232,6 +236,32 @@ async function serve() {
                     }
                 }
             }
+        }
+
+        //  it's time to serve an NFT to a User, let's weigh up everyones time and then serve an NFT to a random user!
+        if (mintTime) {
+            var array = [];
+
+            for(var i=0;i<promise.length;i++) {
+                var address = promise[i].address;
+                var time = promise[i].listened;
+                for(var t=0;t<time;t++) {
+                    array.push([address, 1]);
+                }
+            }
+
+            //  listening time has been weighed out... time to select our random winner and which NFT they won
+            var length = array.length;
+            var random = tools.getRandomInt(length);
+            var winner = array[random][0];
+            var nft = tools.getRandomInt(3);
+
+            //  flip their NFT value from -1 to one of 3
+            await db.Query(`UPDATE users SET nft=? WHERE address=?`, [nft, winner]);
+
+            //  set last serve time to current time
+            await db.Query(`UPDATE nfts SET lastServeTimeMS=?, lastServeTimeString=?`, [tools.getCurrentTimeMS(), tools.getCurrentTimeString()]);
+
         }
     }
     setInterval(mine, 1000);

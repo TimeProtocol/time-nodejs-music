@@ -2,6 +2,7 @@
 //  ========
 
 const ethers = require('ethers');
+const db = require('./db.js');
 const debug = require('./debug.js');
 
 module.exports = {
@@ -66,10 +67,28 @@ module.exports = {
         return time;
     },
 
-    //  returns true if the first date is equal to or further than the second date
-    compareTimes: function(date1, date2) {
-        if (date1 > date2) return true;
-        else return false;
+    //  returns true if the first date is equal to or further than the second date AND its greater than the 'block' speed
+    compareTimes: async function(date1, date2) {
+        if (date1 > date2) {
+
+            var difference = (date1 - date2);
+
+            var promise = await db.Query(`SELECT amountStarted, daysToMine FROM nfts`);
+            var days = promise[0].daysToMine;
+            var amountStarted = promise[0].amountStarted;
+
+            var hours = 24 / (amountStarted / days);
+            var milliseconds = (hours * 60 * 60 * 1000);
+
+            if (difference >= milliseconds) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
 
 }
