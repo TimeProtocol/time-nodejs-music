@@ -63,10 +63,18 @@ contract TimeLock is ChainlinkClient, ConfirmedOwner, ERC1155Holder {
     }
 
     /**
-     * Allow withdraw of deposited ERC1155 NFTs from the contract
+     * Withdraw a specific amount of NFTs from the Contract
     */
-    function withdrawERC1155NFT(uint256 amount) public onlyOwner {
-        require(nftAddress.balanceOf(address(this), nftID) >= amount);
-        nftAddress.safeTransferFrom(address(this), msg.sender, nftID, amount, "");
+    function withdrawNFTAmount(uint256 amount, int256 tokenID) public onlyOwner {
+        require(nftAddress.balanceOf(address(this), tokenID) >= amount);
+        nftAddress.safeTransferFrom(address(this), msg.sender, tokenID, amount, "");
+    }
+
+    /**
+     * Withdraw all the NFTs from the Contract
+    */
+    function withdrawNFTAll(int256 tokenID) public onlyOwner {
+        require(nftAddress.balanceOf(address(this), tokenID) > 0);
+        nftAddress.safeTransferFrom(address(this), msg.sender, tokenID, nftAddress.balanceOf(address(this), tokenID), "");
     }
 }
