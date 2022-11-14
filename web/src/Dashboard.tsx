@@ -3,6 +3,7 @@ import Player from "./Player";
 import image1 from "./assets/MesoNFT01L1.jpg";
 import image2 from "./assets/MesoNFT01L2.jpg";
 import image3 from "./assets/MesoNFT01L3.jpg";
+import clsx from "clsx";
 
 const SpotifyWebApi = require("spotify-web-api-node");
 const ALBUM_URI = "6oYvjbrNIu0lA5QAi33K1q";
@@ -37,6 +38,8 @@ function Dashboard({ access_token, socket }: DashboardProps) {
         //}
     });
 
+    const mint = () => {}
+
     const images = [image1, image2, image3]
     
     return (
@@ -47,6 +50,16 @@ function Dashboard({ access_token, socket }: DashboardProps) {
                 </div> */}
         <Player access_token={access_token} trackUri={trackUri} socket={socket} />
         </div>
+        <div className="mt-12">
+        <button
+            onClick={mint}
+            className={clsx(
+                "inline-block border rounded text-center transition text-white py-2 px-4 text-base font-bold bg-turquoise border-turquoise min-w-[10rem]"
+            )}
+        >
+          Mint NFT
+        </button>
+      </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 my-16">
         {images.map((image, i) => (
             <div className=" bg-black/30 p-4 w-full max-w-sm text-center  border-turquoise/50 rounded-md drop-shadow-2xl">
