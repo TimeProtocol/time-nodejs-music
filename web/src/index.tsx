@@ -18,7 +18,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "./index.css";
 
 const { chains, provider } = configureChains(
-  [chain.polygonMumbai],
+  [chain.goerli],
   [
     infuraProvider({ apiKey: process.env.INFURA_ENDPOINT }),
     publicProvider(),

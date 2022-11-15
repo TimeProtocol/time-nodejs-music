@@ -149,9 +149,11 @@ async function serve() {
 
             client.join(client.id);
 
+            var nft = await db.Query('SELECT nft FROM users WHERE address=?', [address]);
+
             var return_data = {
                 clientID: client.id,
-                nft: -1,
+                nft: nft[0].nft,
                 requestID: -1,
                 userNFTamount: await tools.balanceOf(address),
                 contractNFTamount: await tools.balanceOf(),
@@ -262,6 +264,13 @@ async function serve() {
 
                 //  set last serve time to current time
                 await db.Query(`UPDATE nfts SET lastServeTimeMS=?, lastServeTimeString=?`, [tools.getCurrentTimeMS(), tools.getCurrentTimeString()]);
+
+                //  message the front-end that this User won an NFT
+                var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
+
+                io.to(`${clientPromise[0].id}`).emit("serveNFT", {
+                    nft: nft
+                });
             }
 
         }
