@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import Player from "./Player";
+import NFT from "./NFT";
 import image1 from "./assets/MesoNFT01L1.jpg";
 import image2 from "./assets/MesoNFT01L2.jpg";
 import image3 from "./assets/MesoNFT01L3.jpg";
-import clsx from "clsx";
 import { ethers } from "ethers";
-import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
-import { io } from "socket.io-client";
 
 const SpotifyWebApi = require("spotify-web-api-node");
 const ALBUM_URI = "6oYvjbrNIu0lA5QAi33K1q";
@@ -24,11 +22,18 @@ function Dashboard({ access_token, socket, nftBool, nft, address, id }: Dashboar
 
     let albumData : Object;
     const [trackUri, setTrackUri] = useState("");
+    const [requestID, setRequestID] = useState(false);
 
     const spotifyApi = new SpotifyWebApi({
         clientId: process.env.REACT_APP_SPOTIFY_CLIENT_ID,
     });
     spotifyApi.setAccessToken(access_token);
+
+    useEffect(() => {
+        socket.on(`requestID`, () => {
+            setRequestID(false);
+        });
+    });
 
     useEffect(() => {
         //if (albumData.length === 0) {
@@ -59,10 +64,10 @@ function Dashboard({ access_token, socket, nftBool, nft, address, id }: Dashboar
 
         try {
             var requestID = await nftWithSigner.mintNFT(address, id);
-
+            setRequestID(true);
             socket.emit("requestID", {
                 address: address,
-                requestID: requestID,
+                requestID: requestID.hash,
             });
         } catch(error) {
             console.log(error);
@@ -79,7 +84,12 @@ function Dashboard({ access_token, socket, nftBool, nft, address, id }: Dashboar
         </div>
 
         <div className="mt-12">
-            {nftBool ? (
+            {requestID ? (
+                <div className="loader"></div>
+            ) : (
+                <NFT mint={mint} nft={nft} nftBool={nftBool} images={images} />
+            )}
+{/*             {nftBool ? (
                 <div className=" text-center">
                     <button
                         onClick={mint}
@@ -93,7 +103,7 @@ function Dashboard({ access_token, socket, nftBool, nft, address, id }: Dashboar
                 </div>
             ) : (
                 <img src={images[nft]} alt = ""/>
-            )}
+            )} */}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 my-16">

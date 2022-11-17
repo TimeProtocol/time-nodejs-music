@@ -55,7 +55,7 @@ async function main() {
                 var timeString = tools.getCurrentTimeString();
                 var timeMS = tools.getCurrentTimeMS();
 
-                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 0.25]);
+                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 0.50]);
             }
             else {
                 for(var i=0;i<promise.length;i++) {
@@ -81,7 +81,7 @@ async function main() {
     eventlisteners.EventChainlinkRequested(filter);
 
     var filter = new eventlisteners.Filter(consumerContract, "ChainlinkFulfilled(bytes32)");
-    eventlisteners.EventChainlinkFulfilled(filter);
+    eventlisteners.EventChainlinkFulfilled(filter, io);
 
     //  Run the server logic
     await serve();
@@ -176,7 +176,7 @@ async function serve() {
         });
 
         client.on('requestID', async function socket_io_requestID(data) {
-            await db.Query(`UPDATE users SET requestID=? WHERE address=?`, [data.requestID, data.address]);
+            await db.Query(`UPDATE users SET requestID=? WHERE address=?`, [String(data.requestID), data.address]);
         });
 
     });

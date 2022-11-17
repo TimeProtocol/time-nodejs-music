@@ -44,6 +44,10 @@ function App() {
       setNFT(data.nft);
       setNFTBool(true);
     });
+    
+    socket.on("requestID", () => {
+      setNFTBool(false);
+    });
 
     return () => {
       socket.off("connect");

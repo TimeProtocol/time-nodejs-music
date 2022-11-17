@@ -58,7 +58,7 @@ module.exports = {
         })
     },
 
-    EventChainlinkFulfilled: async function(filter) {
+    EventChainlinkFulfilled: async function(filter, io) {
         const provider = new ethers.providers.InfuraProvider(
             process.env.ETHEREUM_NETWORK,
             process.env.INFURA_API_KEY
@@ -78,6 +78,10 @@ module.exports = {
 
                         await db.Query(`UPDATE users SET requestID=? WHERE address=?`, ["-1", address]);
                         await db.Query(`UPDATE users SET nft=? WHERE address=?`, [-1, address]);
+
+                        var promise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
+
+                        io.to(promise[0].id).emit(`requestID`, {} );
                     }
                 }
 
