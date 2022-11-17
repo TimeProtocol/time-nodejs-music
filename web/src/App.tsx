@@ -15,7 +15,8 @@ const expires_in = new URLSearchParams(window.location.hash).get('expires_in');
 function App() {
   const { address, isConnected } = useAccount();
   const [clientID, setClientID] = useState("");
-  const [nft, setNFT] = useState(false);
+  const [nftBool, setNFTBool] = useState(false);
+  const [nft, setNFT] = useState(-1);
 
   ////  socket.io
   useEffect(() => {
@@ -30,7 +31,8 @@ function App() {
     socket.on("login", (data) => {
       setClientID(data.clientID);
       if (data.nft > -1) {
-        setNFT(true);
+        setNFTBool(true);
+        setNFT(data.nft);
       }
     });
 
@@ -40,6 +42,7 @@ function App() {
 
     socket.on("serveNFT", (data) => {
       setNFT(data.nft);
+      setNFTBool(true);
     });
 
     return () => {
@@ -102,7 +105,7 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
       {address && isConnected && tracks && access_token ? (
-        <Dashboard access_token={access_token} socket={socket} nft={nft} address={address} id={clientID} />
+        <Dashboard access_token={access_token} socket={socket} nftBool={nftBool} nft={nft} address={address} id={clientID} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}

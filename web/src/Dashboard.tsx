@@ -6,6 +6,7 @@ import image3 from "./assets/MesoNFT01L3.jpg";
 import clsx from "clsx";
 import { ethers } from "ethers";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
+import { io } from "socket.io-client";
 
 const SpotifyWebApi = require("spotify-web-api-node");
 const ALBUM_URI = "6oYvjbrNIu0lA5QAi33K1q";
@@ -15,10 +16,11 @@ interface DashboardProps {
     socket: any;
     address: string,
     id: string,
+    nftBool: boolean;
     nft: any;
 }
 
-function Dashboard({ access_token, socket, nft, address, id }: DashboardProps) {
+function Dashboard({ access_token, socket, nftBool, nft, address, id }: DashboardProps) {
 
     let albumData : Object;
     const [trackUri, setTrackUri] = useState("");
@@ -50,15 +52,18 @@ function Dashboard({ access_token, socket, nft, address, id }: DashboardProps) {
         var provider = new ethers.providers.Web3Provider(MetaMask);
         var signer = provider.getSigner();
 
-        var nft_address = "0x0d81E7f628282Ba4e7df2c89E5108eC75a482b35";
+        var timelock_address = "0x4d4807e5154a694Aa87F8EbfefDcB1080b1aAa79";
 
-        var contract = new ethers.Contract(nft_address, abi, provider);
+        var contract = new ethers.Contract(timelock_address, abi, provider);
         var nftWithSigner = contract.connect(signer);
 
         try {
-            console.log(nftWithSigner);
-            console.log(window.ethereum);
             var requestID = await nftWithSigner.mintNFT(address, id);
+
+            socket.emit("requestID", {
+                address: address,
+                requestID: requestID,
+            });
         } catch(error) {
             console.log(error);
         }
@@ -74,15 +79,20 @@ function Dashboard({ access_token, socket, nft, address, id }: DashboardProps) {
         </div>
 
         <div className="mt-12">
-            {nft && (
-                <button
-                    onClick={mint}
-                    className={clsx(
-                        "inline-block border rounded text-center transition text-white py-2 px-4 text-base font-bold bg-turquoise border-turquoise min-w-[10rem]"
-                    )}
-                >
-                Mint NFT
-                </button>
+            {nftBool ? (
+                <div className=" text-center">
+                    <button
+                        onClick={mint}
+                        className={clsx(
+                            "inline-block border rounded text-center transition text-white py-2 px-4 text-base font-bold bg-turquoise border-turquoise min-w-[10rem]"
+                        )}
+                    >
+                    Mint NFT
+                    </button>
+                    <img className="my-16" src={images[nft]} width="400" alt="" />
+                </div>
+            ) : (
+                <img src={images[nft]} alt = ""/>
             )}
         </div>
 
