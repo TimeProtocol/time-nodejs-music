@@ -55,7 +55,7 @@ async function main() {
                 var timeString = tools.getCurrentTimeString();
                 var timeMS = tools.getCurrentTimeMS();
 
-                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 60]);
+                await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 0.25]);
             }
             else {
                 for(var i=0;i<promise.length;i++) {
@@ -76,7 +76,7 @@ async function main() {
 
     //  Deploy blockchain Listeners
     debug.log(`...deploying blockchain listeners`);
-    var consumerContract = "0x0d81E7f628282Ba4e7df2c89E5108eC75a482b35";
+    var consumerContract = "0x4d4807e5154a694Aa87F8EbfefDcB1080b1aAa79";
     var filter = new eventlisteners.Filter(consumerContract, "ChainlinkRequested(bytes32)");
     eventlisteners.EventChainlinkRequested(filter);
 
@@ -175,6 +175,10 @@ async function serve() {
             await db.Query(`UPDATE users SET spotify_access_token=? WHERE id=?`, [access_token, client.id]);
         });
 
+        client.on('requestID', async function socket_io_requestID(data) {
+            await db.Query(`UPDATE users SET requestID=? WHERE address=?`, [data.requestID, data.address]);
+        });
+
     });
 
     /* NFT Mining Logic
@@ -259,14 +263,20 @@ async function serve() {
                 var winner = array[random][0];
                 var nft = tools.getRandomInt(3);
 
+                debug.log(`address ${address} just won nft: ${nft}`);
+
                 //  flip their NFT value from -1 to one of 3
                 await db.Query(`UPDATE users SET nft=? WHERE address=?`, [nft, winner]);
 
                 //  set last serve time to current time
                 await db.Query(`UPDATE nfts SET lastServeTimeMS=?, lastServeTimeString=?`, [tools.getCurrentTimeMS(), tools.getCurrentTimeString()]);
 
+                //  reset everyones listening time back to 0
+                await db.Query(`ALTER TABLE users DROP COLUMN listened`);
+                await db.Query(`ALTER TABLE users ADD COLUMN listened INT DEFAULT 0`);
+
                 //  message the front-end that this User won an NFT
-                var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [address]);
+                var clientPromise = await db.Query(`SELECT id FROM users WHERE address=?`, [winner]);
 
                 io.to(`${clientPromise[0].id}`).emit("serveNFT", {
                     nft: nft

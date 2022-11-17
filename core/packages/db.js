@@ -31,7 +31,7 @@ module.exports = {
         }
 
         const table_create_query_users = `CREATE TABLE IF NOT EXISTS users (address TEXT, id TEXT, nft INT, requestID TEXT, spotify_access_token TEXT, listened INT)`;
-        const table_create_query_nfts = `CREATE TABLE IF NOT EXISTS nfts (nft TEXT, lastServeTimeString TEXT, lastServeTimeMS BIGINT, amountStarted INT, amountLeft INT, daysToMine INT)`;
+        const table_create_query_nfts = `CREATE TABLE IF NOT EXISTS nfts (nft TEXT, lastServeTimeString TEXT, lastServeTimeMS BIGINT, amountStarted INT, amountLeft INT, daysToMine DECIMAL(2, 2) )`;
 
         //  Let's try to connect to the sql server using the default settings
         try {

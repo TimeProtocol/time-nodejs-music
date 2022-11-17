@@ -16,16 +16,14 @@ contract TimeLock is ChainlinkClient, ConfirmedOwner, ERC1155Holder {
     mapping (address => string) public clientIds;
 
     IERC1155 private nftAddress;
-    uint256 nftID;
 
     event MintNFT(bytes32 indexed requestId, string id, int256 nft);
 
-    constructor() ConfirmedOwner(msg.sender) {
+    constructor(address _address) ConfirmedOwner(msg.sender) {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        setChainlinkOracle(0xDe868BdC543c76d22f51624a3F8B767964063014);
+        setChainlinkOracle(0x03c80e1985318050A7586c4b56855F1Be60A0dEd);
         jobId = 'a2b81007257c4711be0ea7fab90aa54d';
-        nftAddress = IERC1155(0x886373c9d3EC58f34416680b5C535C7CA3657af3);
-        nftID = 0;
+        nftAddress = IERC1155(_address);
         fee = (1 * LINK_DIVISIBILITY) / 10;
     }
 
@@ -47,16 +45,24 @@ contract TimeLock is ChainlinkClient, ConfirmedOwner, ERC1155Holder {
         //  unpack address using id --> addresses[_id]
         
         if (_nft > -1) {
+            uint256 nft = uint256(_nft);
             if (keccak256(abi.encodePacked(_id)) == keccak256(abi.encodePacked((clientIds[addresses[_id]])))) {
-                require(nftAddress.balanceOf(address(this), nftID) >= 1);
-                nftAddress.safeTransferFrom(address(this), addresses[_id], nftID, 1, 'Unable to transfer');
+                require(nftAddress.balanceOf(address(this), nft) >= 1);
+                nftAddress.safeTransferFrom(address(this), addresses[_id], nft, 1, 'Unable to transfer');
             }
         }
     }
 
     /**
-     * Allow withdraw of Link tokens from the contract
-     */
+     * Change the NFT set address
+    */
+    function setNFTAddress(address _address) public onlyOwner {
+        nftAddress = IERC1155(_address);
+    }
+
+    /**
+     * Allow withdraw of Link tokens from the Contract
+    */
     function withdrawLink() public onlyOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
         require(link.transfer(msg.sender, link.balanceOf(address(this))), 'Unable to transfer');
@@ -65,7 +71,7 @@ contract TimeLock is ChainlinkClient, ConfirmedOwner, ERC1155Holder {
     /**
      * Withdraw a specific amount of NFTs from the Contract
     */
-    function withdrawNFTAmount(uint256 amount, int256 tokenID) public onlyOwner {
+    function withdrawNFTAmount(uint256 amount, uint256 tokenID) public onlyOwner {
         require(nftAddress.balanceOf(address(this), tokenID) >= amount);
         nftAddress.safeTransferFrom(address(this), msg.sender, tokenID, amount, "");
     }
@@ -73,7 +79,7 @@ contract TimeLock is ChainlinkClient, ConfirmedOwner, ERC1155Holder {
     /**
      * Withdraw all the NFTs from the Contract
     */
-    function withdrawNFTAll(int256 tokenID) public onlyOwner {
+    function withdrawNFTAll(uint256 tokenID) public onlyOwner {
         require(nftAddress.balanceOf(address(this), tokenID) > 0);
         nftAddress.safeTransferFrom(address(this), msg.sender, tokenID, nftAddress.balanceOf(address(this), tokenID), "");
     }

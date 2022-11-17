@@ -42,7 +42,7 @@ module.exports = {
         )
 
         provider.on(filter, async (bytes) => {
-            debug.log(`bytes!`);
+            debug.log(`Event ChainlinkRequested!`);
             debug.log(bytes);
 
             try {
@@ -65,7 +65,7 @@ module.exports = {
         )
 
         provider.on(filter, async (bytes) => {
-            debug.log(`bytes!`);
+            debug.log(`Event ChainlinkFulfilled!`);
             debug.log(bytes);
 
             try {
