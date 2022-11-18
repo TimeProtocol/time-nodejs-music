@@ -12,7 +12,7 @@ function Player({ access_token, trackUri, socket }: PlayerProps ) {
 
     const [play, setPlay] = useState(false);
     const [trackImage, setTrackImage] = useState("");
-    //const [trackUri, setTrackUri] = useState("");
+    const [_trackUri, setTrackUri] = useState("");
     const [albumUri, setAlbumUri] = useState("");
 
     const spotifyApi = new SpotifyWebApi({
@@ -23,7 +23,7 @@ function Player({ access_token, trackUri, socket }: PlayerProps ) {
     spotifyApi.setAccessToken(access_token);
     spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
         setTrackImage(data.body.item.album.images[0].url);
-        //setTrackUri(data.body.item.uri);
+        setTrackUri(data.body.item.uri);
     });
 
     return (
@@ -38,7 +38,7 @@ function Player({ access_token, trackUri, socket }: PlayerProps ) {
                     token={access_token}
                     showSaveIcon
                     callback={state => {
-                        if (state.track.uri != trackUri) {
+                        if (state.track.uri != _trackUri) {
                             spotifyApi.getMyCurrentPlayingTrack().then((data: any) => {
                                 setTrackImage(data.body.item.album.images[0].url);
                                 //setTrackUri(state.track.uri);
@@ -46,7 +46,7 @@ function Player({ access_token, trackUri, socket }: PlayerProps ) {
                         }
                     }}
                     play={play}
-                    uris={trackUri ? trackUri : ""}
+                    uris={_trackUri ? _trackUri : ""}
                     styles={{
                         activeColor: '#fff',
                         bgColor: '#333',
