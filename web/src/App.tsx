@@ -3,6 +3,7 @@ import { useAccount } from "wagmi";
 import io from "socket.io-client";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import { debug } from "console";
 const SpotifyWebApi = require('spotify-web-api-node');
 
 const socket = io(`${process.env.REACT_APP_TIME_ENDPOINT}`);
@@ -17,6 +18,7 @@ function App() {
   const [clientID, setClientID] = useState("");
   const [nftBool, setNFTBool] = useState(false);
   const [nft, setNFT] = useState(-1);
+  const [seconds, setSeconds] = useState(0);
 
   ////  socket.io
   useEffect(() => {
@@ -30,6 +32,7 @@ function App() {
 
     socket.on("login", (data) => {
       setClientID(data.clientID);
+      setSeconds(data.seconds);
       if (data.nft > -1) {
         setNFTBool(true);
         setNFT(data.nft);
@@ -43,6 +46,11 @@ function App() {
     socket.on("serveNFT", (data) => {
       setNFT(data.nft);
       setNFTBool(true);
+    });
+
+    socket.on("secondsUntilBlock", (data) => {
+      setSeconds(data);
+      console.log(`ass`);
     });
     
     socket.on("requestID", () => {
@@ -109,7 +117,7 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 radial-bg">
       {address && isConnected && tracks && access_token ? (
-        <Dashboard access_token={access_token} socket={socket} nftBool={nftBool} nft={nft} address={address} id={clientID} />
+        <Dashboard access_token={access_token} socket={socket} nftBool={nftBool} nft={nft} address={address} id={clientID} seconds={seconds} />
       ) : (
         <Login LoginToSpotify={LoginToSpotify} clientID={clientID} />
       )}

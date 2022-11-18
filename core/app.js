@@ -56,6 +56,10 @@ async function main() {
                 var timeMS = tools.getCurrentTimeMS();
 
                 await db.Query(`INSERT INTO nfts (nft, lastServeTimeString, lastServeTimeMS, amountStarted, amountLeft, daysToMine) VALUES (?, ?, ?, ?, ?, ?)`, [ALBUM_URI, timeString, timeMS, 300, 300, 0.50]);
+
+                var nextBlockTimeMS = await tools.getNextBlockTimeMS();
+
+                await db.Query(`UPDATE nfts SET nextServeTimeMS=? WHERE nft=?`, [nextBlockTimeMS, ALBUM_URI]);
             }
             else {
                 for(var i=0;i<promise.length;i++) {
@@ -153,12 +157,14 @@ async function serve() {
 
             var nft = await db.Query('SELECT nft FROM users WHERE address=?', [address]);
 
+
             var return_data = {
                 clientID: client.id,
                 nft: nft[0].nft,
                 requestID: -1,
                 userNFTamount: await tools.balanceOf(address),
                 contractNFTamount: await tools.balanceOf(),
+                seconds: await tools.getSecondsTillNextBlock()
             }
 
             client.emit('login', return_data);
@@ -191,7 +197,7 @@ async function serve() {
     */
 
     async function mine() {
-        let promise = await db.Query(`SELECT address, spotify_access_token, listened FROM users WHERE spotify_access_token != ""`);
+        let promise = await db.Query(`SELECT id, address, spotify_access_token, listened FROM users WHERE spotify_access_token != ""`);
 
         //  compare current time to last serve time
         var lastServeTimePromise = await db.Query(`SELECT lastServeTimeMS FROM nfts`);
@@ -200,7 +206,13 @@ async function serve() {
         for (var i=0;i<promise.length;i++) {
             var address = promise[i].address;
             var access_token = promise[i].spotify_access_token;
+            var id = promise[i].id;
             try {
+                var secondsUntilNextBlock = await tools.getSecondsTillNextBlock();
+                debug.log(secondsUntilNextBlock);
+                if (secondsUntilNextBlock > -1) {
+                    io.to(id).emit("secondsUntilBlock", secondsUntilNextBlock);
+                }
                 var res = await music.getPlayingTrack(music.createSpotifyApi(access_token));
                 if (res.body.is_playing) {
                     if (res.body.item != null) {
@@ -210,6 +222,11 @@ async function serve() {
                         var albumName = res.body.item.album.name;
                         var trackUri = res.body.item.uri;
                         var albumUri = res.body.item.album.uri;
+
+/*                         var secondsUntilNextBlock = await tools.getSecondsTillNextBlock();
+                        if (secondsUntilNextBlock > -1) {
+                            io.to(id).emit("secondsUntilBlock", secondsUntilNextBlock);
+                        } */
 
                         if (albumUri.includes(ALBUM_URI)) {
                             var currentAmount = await db.Query(`SELECT listened FROM users WHERE address=?`, [address]);

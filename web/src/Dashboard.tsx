@@ -5,6 +5,7 @@ import image1 from "./assets/MesoNFT01L1.jpg";
 import image2 from "./assets/MesoNFT01L2.jpg";
 import image3 from "./assets/MesoNFT01L3.jpg";
 import { ethers } from "ethers";
+import internal from "stream";
 
 const SpotifyWebApi = require("spotify-web-api-node");
 const ALBUM_URI = "6oYvjbrNIu0lA5QAi33K1q";
@@ -16,9 +17,10 @@ interface DashboardProps {
     id: string,
     nftBool: boolean;
     nft: any;
+    seconds: any;
 }
 
-function Dashboard({ access_token, socket, nftBool, nft, address, id }: DashboardProps) {
+function Dashboard({ access_token, socket, nftBool, nft, address, id, seconds }: DashboardProps) {
 
     let albumData : Object;
     const [trackUri, setTrackUri] = useState("");
@@ -79,6 +81,9 @@ function Dashboard({ access_token, socket, nftBool, nft, address, id }: Dashboar
     
     return (
     <>
+        <div>
+            <p>Next Block in {seconds} seconds...</p>
+        </div>
         <div className="bg-black/30 mt-16 py-20 px-10 w-full max-w-xl text-center border border-turquoise/50 rounded-md drop-shadow-2xl">
             <Player access_token={access_token} trackUri={trackUri} socket={socket} />
         </div>

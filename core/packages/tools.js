@@ -66,6 +66,22 @@ module.exports = {
         return time;
     },
 
+    getNextBlockTimeMS: async function() {
+        var promise = await db.Query(`SELECT lastServeTimeMS, amountStarted, daysToMine FROM nfts`);
+        var daysToMine = promise[0].daysToMine;
+        var amountStarted = promise[0].amountStarted;
+        var lastServeTimeMS = promise[0].lastServeTimeMS;
+
+        var hours = 24 / (amountStarted / daysToMine);
+        var minutes = (hours * 60)
+        var seconds = (minutes * 60);
+        var milliseconds = (seconds * 1000);
+
+        var nextBlockTimeMS = lastServeTimeMS + milliseconds;
+
+        return nextBlockTimeMS;
+    },
+
     //  returns true if the first date is equal to or further than the second date AND its greater than the 'block' speed
     compareTimes: async function(date1, date2) {
         if (date1 > date2) {
@@ -88,6 +104,28 @@ module.exports = {
         } else {
             return false;
         }
+    },
+
+    getSecondsTillNextBlock: async function() {
+        var promise = await db.Query(`SELECT lastServeTimeMS, nextServeTimeMS FROM nfts`);
+        var nextServeTimeMS = promise[0].nextServeTimeMS;
+        var lastServeTimeMS = promise[0].lastServeTimeMS;
+        var currentTime = new Date();
+        var currentTimeMS = currentTime.getTime();
+
+        var diff = (nextServeTimeMS - lastServeTimeMS) / 1000;
+
+        var differenceMS = (nextServeTimeMS - currentTimeMS);
+        var differenceSeconds = Math.round(differenceMS / 1000);
+
+        //debug.log(differenceSeconds);
+
+        return differenceSeconds;
+
+        //debug.log(`last block was at: ${lastServeTimeMS}`);
+        //debug.log(`next blocks at :   ${nextServeTimeMS}`);
+        //debug.log(`current time is:   ${currentTimeMS}`);
+        //debug.log(``);
     }
 
 }
