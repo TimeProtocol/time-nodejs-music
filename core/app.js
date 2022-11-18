@@ -84,7 +84,9 @@ async function main() {
     eventlisteners.EventChainlinkFulfilled(filter, io);
 
     //  Run the server logic
-    await serve();
+    serve().catch(error => {
+        debug.error(error);
+    });
 }
 
 async function serve() {
@@ -289,4 +291,6 @@ async function serve() {
 
 }
 
-main();
+main().catch(error => {
+    debug.error(error);
+});
