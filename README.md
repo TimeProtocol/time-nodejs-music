@@ -1,4 +1,4 @@
-# Time Node with the Music Mining Mechanism 
+# Time Node with the Music Mining Mechanism
 
 
 ## Contains an alpha version of the TIME Node which is a layer in-between blockchain-based NFTs and any sort of external Application logic they can connect to.
@@ -30,6 +30,7 @@ SPOTIFY_CLIENT_ID="" (acquired from the Spotify Developer App dashboard)
 SPOTIFY_CLIENT_SECRET="" (acquired from the Spotify Developer App dashboard)
 
 DB_HOST=""
+DB_PORT=""
 DB_USER=""
 DB_PASSWORD=""
 DB_DATABASE=""
