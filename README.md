@@ -10,9 +10,11 @@
 # Installation:
 
  - Clone the entire repo
- - Run `npm build` to download the required packages
+ - Run `npm install` in `core/` to download the required packages
+ - Run `yarn build` in `web/` to download the required packages
  - Make sure a SQL database software is installed (I am using MySQL for this)
  - Create a `.env` file in both `core/` and `web/`. Default `.env`'s are down below
+ - Since I'm using httpolyglot to get both HTTP and HTTPS this requires both a `server.cert` and a `server.key` file in `core/`
  - Start the `web/` server by running `yarn start` in `web/`, it default runs on port 3000
  - Start the `core/` server by running `npm start` in `core/`, it default runs on port 8080
  - Head to `localhost:3000`, sign into your desired Web3 Wallet and then sign into your Spotify account
