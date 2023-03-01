@@ -11,7 +11,8 @@ let settings = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    socketPath: process.env.DB_SOCKETPATH
+    socketPath: process.env.DB_SOCKETPATH,
+    port: process.env.DB_PATH,
 }
 
 if (gcloud) delete settings.host;
@@ -44,14 +45,14 @@ module.exports = {
             var connection = await mysql.createPool(this.settings);
             var promise = await connection.query(`SELECT * FROM nfts`);
             await connection.end();
-            
+
             debug.log(`...successfully established connection to the sql server using default settings`);
 
             map.users = promise.length;
 
             return map;
-        } 
-        
+        }
+
         //  Error with connecting to the sqlserver using default settings
         catch(err) {
 
@@ -128,5 +129,5 @@ module.exports = {
         }
 
     },
-    
+
 }
